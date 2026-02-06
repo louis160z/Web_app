@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Agendamento de Carros</title>
+    <script src="https://cdn.tailwindcss.com"></script> </head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold mb-4 text-center">🚗 Agendamento de Frota</h1>
+        
+        <div id="login-section">
+            <input type="email" id="email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded">
+            <button onclick="fazerLogin()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Entrar</button>
+        </div>
+
+        <div id="user-section" class="hidden mt-6">
+            <h2 class="font-semibold mb-2 text-gray-700">Solicitar Carro</h2>
+            <select id="car-select" class="w-full mb-2 p-2 border rounded">
+                <option value="1">Carro A (Toyota Corolla)</option>
+                <option value="2">Carro B (Hyundai HB20)</option>
+            </select>
+            <input type="datetime-local" id="data-reserva" class="w-full mb-2 p-2 border rounded">
+            <button onclick="solicitarAgendamento()" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Solicitar Reserva</button>
+        </div>
+
+        <div id="manager-section" class="hidden mt-6 border-t pt-4">
+            <h2 class="font-bold text-red-600 mb-2">Painel do Gestor</h2>
+            <div id="lista-pendente" class="text-sm text-gray-600">Carregando solicitações...</div>
+        </div>
+    </div>
+
+    <script>
+        const N8N_WEBHOOK_URL = 'SUA_URL_DO_N8N_AQUI'; // Substitua pela sua URL
+
+        let currentUser = null;
+
+        async function fazerLogin() {
+            const email = document.getElementById('email').value;
+            // Aqui você enviaria para o Workflow A do n8n
+            // Simulando resposta do n8n:
+            currentUser = { email: email, role: email.includes('admin') ? 'manager' : 'user' };
+            
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('user-section').classList.remove('hidden');
+
+            if (currentUser.role === 'manager') {
+                document.getElementById('manager-section').classList.remove('hidden');
+                carregarSolicitacoes();
+            }
+        }
+
+        async function solicitarAgendamento() {
+            const data = document.getElementById('data-reserva').value;
+            const carro = document.getElementById('car-select').value;
+
+            const response = await fetch(N8N_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'reserva', user: currentUser.email, car: carro, date: data })
+            });
+
+            if (response.ok) alert('Solicitação enviada!');
+        }
+
+        async function carregarSolicitacoes() {
+            // Aqui o JavaScript chamaria o Workflow C do n8n para listar agendamentos pendentes
+            document.getElementById('lista-pendente').innerHTML = "Nenhuma pendência no momento.";
+        }
+    </script>
+</body>
+</html>
