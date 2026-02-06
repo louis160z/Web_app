@@ -4,27 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Agendamento do Caminhão Munck</title>
-    <script src="https://cdn.tailwindcss.com"></script> </head>
+
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
-        /* Ajuste para o calendário não ficar gigante */
         #calendario { max-height: 500px; margin-top: 20px; }
         .fc-event { cursor: pointer; }
         .fc-header-toolbar {
-            margin-bottom: 0.5rem !important; /* Reduz o espaço abaixo da barra */
-            font-size: 0.85rem; /* Diminui a fonte de tudo na toolbar */
+            margin-bottom: 0.5rem !important;
+            font-size: 0.85rem;
         }
-        
-        /* Diminui especificamente os botões */
-        .fc .fc-button {
-            padding: 0.2rem 0.5rem !important; /* Botões mais "magros" */
-        }
-        
-        /* Diminui o título do mês */
-        .fc .fc-toolbar-title {
-            font-size: 1.1rem !important; /* Título menor e mais discreto */
-        }
+        .fc .fc-button { padding: 0.2rem 0.5rem !important; }
+        .fc .fc-toolbar-title { font-size: 1.1rem !important; }
     </style>
+</head>
+
 <body class="bg-gray-100 p-8">
     <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg">
         <h1 class="text-2xl font-bold mb-4 text-center">🚗 Agendamento do Caminhão Munck</h1>
@@ -35,15 +30,15 @@
         </div>
 
         <div id="user-section" class="hidden mt-6">
-            <h2 class="font-semibold mb-2 text-gray-700">Solicitar Carro</h2>
-            <select id="car-select" class="w-full mb-2 p-2 border rounded">
-                <option value="1">Carro A (Toyota Corolla)</option>
-                <option value="2">Carro B (Hyundai HB20)</option>
-            </select>
+            <h2 class="font-semibold mb-2 text-gray-400">Atividade</h2>
+            <textarea id="atividade" placeholder="Insira o detalhamento da atividade" rows="3" class="w-full mb-2 p-2 border rounded"></textarea>
+            
             <h2 class="font-semibold mb-2 text-gray-400">Data inicial</h2>
             <input type="datetime-local" id="reserva-inicial" class="w-full mb-2 p-2 border rounded">
+            
             <h2 class="font-semibold mb-2 text-gray-400">Data final</h2>
             <input type="datetime-local" id="reserva-final" class="w-full mb-2 p-2 border rounded">
+            
             <button onclick="solicitarAgendamento()" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Solicitar Reserva</button>
         </div>
         
@@ -62,7 +57,7 @@
       
         /**
          * Inicializa o calendário com os dados vindos do n8n.
-         * @param {Array} reservas - Lista de objetos [{title, start, end, color}]
+         * @param {Array} reservas - Lista de objetos [{atividade, start, end, color}]
          */
         function inicializarAgenda(reservas) {
             // Mostra o container do calendário
@@ -125,11 +120,12 @@
         async function solicitarAgendamento() {
             const inicio = document.getElementById('reserva-inicial').value;
             const fim = document.getElementById('reserva-final').value;
+            const atividade = document.getElementById('atividade').value;
 
             const response = await fetch(N8N_WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: currentUser.email, data_inicio: inicio, data_fim: fim })
+                body: JSON.stringify({ user: currentUser.email, data_inicio: inicio, data_fim: fim, atividade: atividade })
             });
 
             if (response.ok) alert('Solicitação enviada!');
