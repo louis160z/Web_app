@@ -20,38 +20,58 @@
     </style>
 </head>
 
-<body class="bg-gray-100 p-8">
-    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg">
-        <h1 class="text-2xl font-bold mb-4 text-center">🚗 Agendamento do Caminhão Munck</h1>
+<body class="bg-gray-100 p-4 md:p-8">
+    <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">🚗 Agendamento do Caminhão Munck</h1>
+
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 items-start">
         
-        <div id="login-section">
-            <input type="email" id="email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded">
-            <button onclick="fazerLogin()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Entrar</button>
+        <div class="w-full lg:w-1/4 space-y-6">
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div id="login-section">
+                    <h2 class="font-bold mb-4 text-gray-700">Acesso</h2>
+                    <input type="email" id="email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded text-sm">
+                    <button onclick="fazerLogin()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition">Entrar</button>
+                </div>
+
+                <div id="user-section" class="hidden mt-4">
+                    <h2 class="text-lg font-bold mb-4 text-blue-600 border-b pb-2">Nova Reserva</h2>
+                    
+                    <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Atividade</h2>
+                    <textarea id="atividade" placeholder="Detalhamento da atividade..." rows="3" class="w-full mb-3 p-2 border rounded text-sm"></textarea>
+                    
+                    <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Data inicial</h2>
+                    <input type="datetime-local" id="reserva-inicial" class="w-full mb-3 p-2 border rounded text-sm">
+                    
+                    <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Data final</h2>
+                    <input type="datetime-local" id="reserva-final" class="w-full mb-4 p-2 border rounded text-sm">
+                    
+                    <button onclick="solicitarAgendamento()" class="w-full bg-green-500 text-white p-2 rounded font-bold hover:bg-green-600 transition">Solicitar Reserva</button>
+                </div>
+            </div>
         </div>
 
-        <div id="user-section" class="hidden mt-6">
-            <h2 class="font-semibold mb-2 text-gray-400">Atividade</h2>
-            <textarea id="atividade" placeholder="Insira o detalhamento da atividade" rows="3" class="w-full mb-2 p-2 border rounded"></textarea>
-            
-            <h2 class="font-semibold mb-2 text-gray-400">Data inicial</h2>
-            <input type="datetime-local" id="reserva-inicial" class="w-full mb-2 p-2 border rounded">
-            
-            <h2 class="font-semibold mb-2 text-gray-400">Data final</h2>
-            <input type="datetime-local" id="reserva-final" class="w-full mb-2 p-2 border rounded">
-            
-            <button onclick="solicitarAgendamento()" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Solicitar Reserva</button>
+        <div class="w-full lg:w-2/4">
+            <div id="calendar-container" class="bg-white p-6 rounded-lg shadow-lg hidden">
+                <h2 class="text-xl font-bold mb-4 text-gray-700 flex items-center gap-2">
+                    <span>📅</span> Agenda de Reservas
+                </h2>
+                <div id="calendario"></div>
+            </div>
         </div>
-        
-        <div id="calendar-container" class="mt-8 bg-white p-4 rounded-lg shadow hidden">
-            <h2 class="text-lg font-bold mb-4 text-gray-700">📅 Agenda de Reservas</h2>
-            <div id="calendario"></div>
-        </div>        
-        
-        <div id="manager-section" class="hidden mt-6 border-t pt-4">
-            <h2 class="font-bold text-red-600 mb-2">Painel do Gestor</h2>
-            <div id="lista-pendente" class="text-sm text-gray-600">Carregando solicitações...</div>
+
+        <div class="w-full lg:w-1/4">
+            <div id="manager-section" class="hidden bg-white p-6 rounded-lg shadow-lg border-t-4 border-red-500">
+                <h2 class="font-bold text-red-600 mb-4 text-lg flex items-center gap-2">
+                    <span>🛡️</span> Painel do Gestor
+                </h2>
+                <div id="lista-pendente" class="text-sm text-gray-600 space-y-2">
+                    <p class="italic">Carregando solicitações...</p>
+                </div>
+            </div>
         </div>
+
     </div>
+</body>
 
     <script>
       
