@@ -3,11 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Agendamento de Carros</title>
+    <title>Sistema de Agendamento do Caminhão Munck</title>
     <script src="https://cdn.tailwindcss.com"></script> </head>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <style>
+        /* Ajuste para o calendário não ficar gigante */
+        #calendario { max-height: 500px; margin-top: 20px; }
+        .fc-event { cursor: pointer; }
+        .fc-header-toolbar {
+            margin-bottom: 0.5rem !important; /* Reduz o espaço abaixo da barra */
+            font-size: 0.85rem; /* Diminui a fonte de tudo na toolbar */
+        }
+        
+        /* Diminui especificamente os botões */
+        .fc .fc-button {
+            padding: 0.2rem 0.5rem !important; /* Botões mais "magros" */
+        }
+        
+        /* Diminui o título do mês */
+        .fc .fc-toolbar-title {
+            font-size: 1.1rem !important; /* Título menor e mais discreto */
+        }
+    </style>
 <body class="bg-gray-100 p-8">
     <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg">
-        <h1 class="text-2xl font-bold mb-4 text-center">🚗 Agendamento de Frota</h1>
+        <h1 class="text-2xl font-bold mb-4 text-center">🚗 Agendamento do Caminhão Munck</h1>
         
         <div id="login-section">
             <input type="email" id="email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded">
@@ -20,10 +40,18 @@
                 <option value="1">Carro A (Toyota Corolla)</option>
                 <option value="2">Carro B (Hyundai HB20)</option>
             </select>
-            <input type="datetime-local" id="data-reserva" class="w-full mb-2 p-2 border rounded">
+            <h2 class="font-semibold mb-2 text-gray-400">Data inicial</h2>
+            <input type="datetime-local" id="reserva-inicial" class="w-full mb-2 p-2 border rounded">
+            <h2 class="font-semibold mb-2 text-gray-400">Data final</h2>
+            <input type="datetime-local" id="reserva-final" class="w-full mb-2 p-2 border rounded">
             <button onclick="solicitarAgendamento()" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Solicitar Reserva</button>
         </div>
-
+        
+        <div id="calendar-container" class="mt-8 bg-white p-4 rounded-lg shadow hidden">
+            <h2 class="text-lg font-bold mb-4 text-gray-700">📅 Agenda de Reservas</h2>
+            <div id="calendario"></div>
+        </div>        
+        
         <div id="manager-section" class="hidden mt-6 border-t pt-4">
             <h2 class="font-bold text-red-600 mb-2">Painel do Gestor</h2>
             <div id="lista-pendente" class="text-sm text-gray-600">Carregando solicitações...</div>
@@ -31,6 +59,49 @@
     </div>
 
     <script>
+      
+        /**
+         * Inicializa o calendário com os dados vindos do n8n.
+         * @param {Array} reservas - Lista de objetos [{title, start, end, color}]
+         */
+        function inicializarAgenda(reservas) {
+            // Mostra o container do calendário
+            document.getElementById('calendar-container').classList.remove('hidden');
+        
+            const calendarEl = document.getElementById('calendario');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'pt-br',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth'
+                },
+                events: reservas, // O n8n deve enviar os dados neste formato
+                eventClick: function(info) {
+                    alert('\nInício: ' + info.event.start.toLocaleString() + '\nFim: ' + info.event.end.toLocaleString());
+                }
+            });
+        
+            calendar.render();
+        }
+        
+        // Exemplo de como você chamaria isso após o login:
+        async function carregarDadosEAgenda() {
+            // 1. Faz o fetch no seu n8n
+            // const response = await fetch('SUA_URL_N8N_PARA_LISTAR_RESERVAS');
+            // const dadosDoBanco = await response.json();
+        
+            // 2. Transforma os dados do MySQL para o formato que o calendário entende
+            const formatadoParaCalendario = [
+                { start: '2026-02-10T10:00:00', end: '2026-02-10T14:00:00', color: '#3b82f6' },
+                { start: '2026-02-12T08:00:00', end: '2026-02-12T15:00:00', color: '#f59e0b' }
+            ];
+        
+            inicializarAgenda(formatadoParaCalendario);
+        }
+
+
         const N8N_WEBHOOK_URL = 'https://conta421.app.n8n.cloud/webhook-test/d6bb9b78-47c4-4ad8-9c4f-1fe9c3ea7a14'; // Substitua pela sua URL
 
         let currentUser = null;
@@ -48,16 +119,17 @@
                 document.getElementById('manager-section').classList.remove('hidden');
                 carregarSolicitacoes();
             }
+            carregarDadosEAgenda();
         }
 
         async function solicitarAgendamento() {
-            const data = document.getElementById('data-reserva').value;
-            const carro = document.getElementById('car-select').value;
+            const inicio = document.getElementById('reserva-inicial').value;
+            const fim = document.getElementById('reserva-final').value;
 
             const response = await fetch(N8N_WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'reserva', user: currentUser.email, car: carro, date: data })
+                body: JSON.stringify({ user: currentUser.email, data_inicio: inicio, data_fim: fim })
             });
 
             if (response.ok) alert('Solicitação enviada!');
