@@ -24,17 +24,46 @@
     <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">🚗 Agendamento do Caminhão Munck</h1>
 
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 items-start">
-        
+
         <div class="w-full lg:w-1/4 space-y-6">
             <div class="bg-white p-6 rounded-lg shadow-lg">
-                <div id="login-section">
+                <div id="login-section" class="text-center">
                     <h2 class="font-bold mb-4 text-gray-700">Acesso</h2>
-                    <input type="email" id="email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded text-sm">
-                    <button onclick="fazerLogin()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition">Entrar</button>
+                    <input type="email" id="email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded text-sm text-center">
+                    <input type="password" id="senha" placeholder="Senha" class="w-full mb-4 p-2 border rounded text-sm text-center">
+                    <button onclick="fazerLogin()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition font-bold mb-4">Entrar</button>
+                    
+                    <p class="text-xs text-gray-500">Não tem conta? 
+                        <a href="javascript:void(0)" onclick="alternarTelas('login-section', 'register-section')" class="text-blue-600 hover:underline">Cadastre-se aqui</a>
+                    </p>
+                </div>
+            
+                <div id="register-section" class="hidden text-center">
+                    <h2 class="font-bold mb-4 text-gray-700">Novo Cadastro</h2>
+                    <input type="text" id="reg-nome" placeholder="Nome Completo" class="w-full mb-2 p-2 border rounded text-sm text-center">
+                    <input type="email" id="reg-email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded text-sm text-center">
+                    <input type="password" id="reg-senha" placeholder="Crie uma Senha" class="w-full mb-4 p-2 border rounded text-sm text-center">
+                    
+                    <button onclick="fazerCadastro()" class="w-full bg-orange-500 text-white p-2 rounded hover:bg-orange-600 transition font-bold mb-4">Finalizar Cadastro</button>
+                    
+                    <p class="text-xs text-gray-500">Já tem conta? 
+                        <a href="javascript:void(0)" onclick="alternarTelas('register-section', 'login-section')" class="text-blue-600 hover:underline">Voltar ao Login</a>
+                    </p>
                 </div>
 
                 <div id="user-section" class="hidden mt-4">
                     <h2 class="text-lg font-bold mb-4 text-blue-600 border-b pb-2">Nova Reserva</h2>
+                    
+                    <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">COORDENADOR</h2>
+                    <select id="coordenador" class="w-full mb-2 p-2 border rounded text-sm text-gray-800">
+                        <option value="" disabled selected hidden>Selecione o coordenador responsável</option>
+                        
+                        <option value="Gabriel Santos Meyer" class="text-gray-800">Gabriel Santos Meyer</option>
+                        <option value="Rogério Santos de Oliveira" class="text-gray-800">Rogério Santos de Oliveira</option>
+                    </select>
+
+                    <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Solicitantes</h2>
+                    <input type="text" id="solicitantes" placeholder="Pessoa 1/Pessoa 2" class="w-full mb-3 p-2 border rounded text-sm">
                     
                     <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Atividade</h2>
                     <textarea id="atividade" placeholder="Detalhamento da atividade..." rows="3" class="w-full mb-3 p-2 border rounded text-sm"></textarea>
@@ -57,6 +86,8 @@
                 </h2>
                 <div id="calendario"></div>
             </div>
+            
+
         </div>
 
         <div class="w-full lg:w-1/4">
@@ -75,11 +106,25 @@
 
     <script>
       
+
+
+        const COR_PENDENTE = '#f59e0b';
+        const COR_PROCESSADO = '#3b82f6';
+        const COR_NEGADO = '#cf0a0a';
+        const COR_APROVADO = '#11f018';
+        const N8N_WEBHOOK_URL = 'https://conta222.app.n8n.cloud/webhook-test/d6bb9b78-47c4-4ad8-9c4f-1fe9c3ea7a14';
+        const N8N_HEADER_AUTH = 'l1U9D3w5B##441V8BdJ2n1YVP86jdO9T&4CcB$98';
+        let currentUser = null;
+        let listaGlobalReservas = [];
+
+
+
         /**
          * Inicializa o calendário com os dados vindos do n8n.
          * @param {Array} reservas - Lista de objetos [{atividade, start, end, color}]
          */
         function inicializarAgenda(reservas) {
+            
             // Mostra o container do calendário
             document.getElementById('calendar-container').classList.remove('hidden');
         
@@ -94,66 +139,279 @@
                 },
                 events: reservas, // O n8n deve enviar os dados neste formato
                 eventClick: function(info) {
-                    alert('\nInício: ' + info.event.start.toLocaleString() + '\nFim: ' + info.event.end.toLocaleString());
+                    const detalhe = info.event.extendedProps.atividade;
+                    const cor = info.event.extendedProps.color;
+                    alert('\nInício: ' + info.event.start.toLocaleString() + '\nFim: ' + info.event.end.toLocaleString() + '\nAtividade: ' + (detalhe || 'Sem descrição') + '\nStatus: ' + cor);
                 }
             });
         
             calendar.render();
         }
         
-        // Exemplo de como você chamaria isso após o login:
-        async function carregarDadosEAgenda() {
-            // 1. Faz o fetch no seu n8n
-            // const response = await fetch('SUA_URL_N8N_PARA_LISTAR_RESERVAS');
-            // const dadosDoBanco = await response.json();
-        
-            // 2. Transforma os dados do MySQL para o formato que o calendário entende
-            const formatadoParaCalendario = [
-                { start: '2026-02-10T10:00:00', end: '2026-02-10T14:00:00', color: '#3b82f6' },
-                { start: '2026-02-12T08:00:00', end: '2026-02-12T15:00:00', color: '#f59e0b' }
-            ];
-        
-            inicializarAgenda(formatadoParaCalendario);
+        //Função apenas para transformar a data 2026-02-15T17:23 em 15/02/2026, 17:23
+        function formatarDataBR(dataISO) {
+            if (!dataISO) return "Data inválida";
+            return new Date(dataISO).toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
+        
+//----------------------------------------------------------------------------------------------------------
 
-
-        const N8N_WEBHOOK_URL = 'https://conta421.app.n8n.cloud/webhook-test/d6bb9b78-47c4-4ad8-9c4f-1fe9c3ea7a14'; // Substitua pela sua URL
-
-        let currentUser = null;
 
         async function fazerLogin() {
-            const email = document.getElementById('email').value;
-            // Aqui você enviaria para o Workflow A do n8n
-            // Simulando resposta do n8n:
-            currentUser = { email: email, role: email.includes('admin') ? 'manager' : 'user' };
-            
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('user-section').classList.remove('hidden');
-
-            if (currentUser.role === 'manager') {
-                document.getElementById('manager-section').classList.remove('hidden');
-                carregarSolicitacoes();
+            const email_login = document.getElementById('email').value;
+            const senha_login = document.getElementById('senha').value;
+        
+            if (!email_login || !senha_login) {
+                alert("Por favor, preencha todos os campos.");
+                return;
             }
-            carregarDadosEAgenda();
+            //Dados para mandar para o n8n
+            const payload = {
+                email: email_login,
+                senha: senha_login,
+                action: 'login'
+            };
+        
+            try {
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      web_authentication: N8N_HEADER_AUTH
+                    },
+                    body: JSON.stringify(payload)
+                });
+        
+                if (response.ok) {
+                    const resultado = await response.json();
+        
+                    if (resultado.status === 'sucesso') {
+                        // currentUser declarado fora da função: let currentUser = null;
+                        currentUser = { role: resultado.role, nome: resultado.nome, email: resultado.email };
+                        listaGlobalReservas = resultado.array_calendar;
+                        document.getElementById('login-section').classList.add('hidden');
+                        document.getElementById('user-section').classList.remove('hidden');
+            
+                        if (currentUser.role === 'manager') {
+                            document.getElementById('manager-section').classList.remove('hidden');
+                            carregarSolicitacoes();
+                        }
+                        //carregarDadosEAgenda();   
+                        inicializarAgenda(listaGlobalReservas);
+
+                    } else {
+                      // Mensagem de erro que seria mandada devido à processos internos no N8N
+                        alert("Erro: " + (resultado.mensagem || "Credenciais inválidas")); //Não implementado o campo mensagens como resposta no n8n
+                    }
+                } else {
+                    // Erro podendo ser de senha errada do Header Auth
+                    alert("Erro no servidor (Status: " + response.status + ")");
+                }
+            } catch (error) {
+                // Captura erros de conexão (n8n offline, etc)
+                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
+            }
+        }       
+        
+        
+        // Função genérica para trocar visibilidade entre duas seções
+        function alternarTelas(idSair, idEntrar) {
+            document.getElementById(idSair).classList.add('hidden');
+            document.getElementById(idEntrar).classList.remove('hidden');
         }
+        
+        // Função para enviar o cadastro para o n8n
+        async function fazerCadastro() {
+            const nome = document.getElementById('reg-nome').value;
+            const email = document.getElementById('reg-email').value;
+            const senha = document.getElementById('reg-senha').value;
+        
+            if (!nome || !email || !senha) {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
+        
+            const payload = {
+                action: 'cadastro',
+                nome: nome,
+                email: email,
+                senha: senha // Lembre-se: em produção, o ideal é usar HTTPS e hashing
+            };
+        
+            try {
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      web_authentication: N8N_HEADER_AUTH
+                    },
+                    body: JSON.stringify(payload)
+                });
+        
+                if (response.ok) {
+                    alert("Cadastro realizado com sucesso! Agora você pode fazer login.");
+                    alternarTelas('register-section', 'login-section');
+                } else {
+                    // Erro podendo ser de senha errada do Header Auth
+                    alert("Erro no servidor (Status: " + response.status + ")");
+                }
+            } catch (error) {
+                // Erro podendo ser de senha errada do Header Auth
+                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
+            }
+        }
+        
+//----------------------------------------------------------------------------------------------------------
+        
 
         async function solicitarAgendamento() {
             const inicio = document.getElementById('reserva-inicial').value;
             const fim = document.getElementById('reserva-final').value;
             const atividade = document.getElementById('atividade').value;
+            const solicitantes = document.getElementById('solicitantes').value;
+            const coordenador = document.getElementById('coordenador').value;
 
-            const response = await fetch(N8N_WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: currentUser.email, data_inicio: inicio, data_fim: fim, atividade: atividade })
-            });
+            const payload = {
+                action: 'agendamento',
+                nome: currentUser.nome,
+                user: currentUser.email,
+                data_inicio: inicio,
+                data_fim: fim,
+                atividade: atividade,
+                solicitantes: solicitantes,
+                coordenador: coordenador
+            };
+            
+            if(!atividade || !inicio || !fim || !solicitantes || !coordenador){
+              alert("Por favor, preencha todos os campos.");
+              return;
+            }
 
-            if (response.ok) alert('Solicitação enviada!');
+            try {
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      web_authentication: N8N_HEADER_AUTH
+                    },
+                    body: JSON.stringify(payload)
+                });
+        
+                if (response.ok) {
+                    //Pensar em colocar a resposta do n8n para poder salvar os dados no calendário
+                    const resultado = await response.json();
+                    
+                    //Atualizando lista e renderizando novamente
+                    listaGlobalReservas.push(resultado);
+                    inicializarAgenda(listaGlobalReservas);
+                    
+                    alert(`Solicitação enviada!\n ID da solicitação:  ${resultado.id}`);
+                } else {
+                    // Erro podendo ser de senha errada do Header Auth
+                    alert("Erro no servidor (Status: " + response.status + ")");
+                }
+            } catch (error) {
+                // Erro podendo ser de senha errada do Header Auth
+                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
+            }
         }
 
         async function carregarSolicitacoes() {
-            // Aqui o JavaScript chamaria o Workflow C do n8n para listar agendamentos pendentes
-            document.getElementById('lista-pendente').innerHTML = "Nenhuma pendência no momento.";
+            //lista com cada div de pendência
+            const listaContainer = document.getElementById('lista-pendente');
+            
+            //lista com cada pendência em formato json
+            const listaPendentes = listaGlobalReservas.filter(item => {
+                    return item.color === COR_PENDENTE;
+                });
+                
+        
+            // Limpa o container antes de carregar
+            listaContainer.innerHTML = "";
+        
+            if (listaPendentes.length === 0) {
+                listaContainer.innerHTML = "<p class='italic text-gray-400'>Nenhuma pendência no momento.</p>";
+                return;
+            }
+        
+            // Cria o HTML para cada pedido
+            listaPendentes.forEach(pedido => {
+                const card = document.createElement('div');
+                card.className = "bg-gray-50 p-3 border rounded-md shadow-sm border-l-4 border-orange-400 mb-3";
+                card.id = `card-pedido-${pedido.id}`; // ID único para remover depois
+        
+                card.innerHTML = `
+                   <div class="flex justify-between gap-2">
+                      <span class="font-bold text-gray-800">
+                          ${pedido.nome} </span>
+                      <span class="text-[11px] text-gray-900 font-medium">
+                          Pedido feito dia ${formatarDataBR(pedido.createdAt).split(',')[0]} </span>
+                      <span class="text-[10px] bg-orange-100 text-orange-600 px-1 rounded font-bold">
+                          PENDENTE
+                      </span>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-2">Atividade: ${pedido.atividade}</p>
+                    <p class="text-xs text-gray-600 mb-2">Solicitantes: ${pedido.solicitantes}</p>
+                    <p class="text-xs text-gray-600 mb-2">Coordenador responsável: ${pedido.coordenador}</p>
+                    <div class="text-[10px] text-gray-500 mb-3">
+                        <p>📅 Inicio:  ${formatarDataBR(pedido.start)}</p>
+                        <p>🏁 Fim:     ${formatarDataBR(pedido.end)}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="decidirPedido(${pedido.id}, 'aprovado')" 
+                            class="flex-1 bg-green-500 text-white py-1 rounded text-xs hover:bg-green-600 transition">
+                            ✅ Aprovar
+                        </button>
+                        <button onclick="decidirPedido(${pedido.id}, 'negado')" 
+                            class="flex-1 bg-red-100 text-red-600 py-1 rounded text-xs hover:bg-red-200 transition">
+                            ❌ Negar
+                        </button>
+                    </div>
+                `;
+                listaContainer.appendChild(card);
+            });
+        }
+        
+        async function decidirPedido(idPedido, acao) {
+
+
+            try{
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', web_authentication: N8N_HEADER_AUTH },
+                    body: JSON.stringify({ action: 'decisao_gestor', id: idPedido, status: acao })
+                });
+                if (!response.ok) {
+                    alert("Erro no servidor (Status: " + response.status + ")");
+                    return;
+                }
+            } catch (error) {
+                // Erro podendo ser de senha errada do Header Auth
+                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
+                return;
+            }
+            
+            console.log(`Pedido ${idPedido} foi ${acao}`);
+            // Simulação visual: Remove o card da tela com um efeito simples
+            const card = document.getElementById(`card-pedido-${idPedido}`);
+            card.classList.add('opacity-50', 'pointer-events-none');
+            
+            setTimeout(() => {
+                card.remove();
+                alert(`Solicitação ${idPedido} marcada como: ${acao.toUpperCase()}`);
+                
+                // Se não sobrar nenhum card, mostra a mensagem de vazio
+                const lista = document.getElementById('lista-pendente');
+                if (lista.children.length === 0) {
+                    lista.innerHTML = "<p class='italic text-gray-400'>Nenhuma pendência no momento.</p>";
+                }
+            }, 500);
         }
     </script>
 </body>
