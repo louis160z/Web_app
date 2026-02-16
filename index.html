@@ -36,6 +36,9 @@
                     <p class="text-xs text-gray-500">Não tem conta? 
                         <a href="javascript:void(0)" onclick="alternarTelas('login-section', 'register-section')" class="text-blue-600 hover:underline">Cadastre-se aqui</a>
                     </p>
+                    <p class="text-xs text-gray-500">Deseja se tornar coordenador? 
+                        <a href="javascript:void(0)" onclick="alternarTelas('login-section', 'register-manager-section')" class="text-blue-600 hover:underline">Cadastre-se como coordenador aqui</a>
+                    </p>
                 </div>
             
                 <div id="register-section" class="hidden text-center">
@@ -50,6 +53,20 @@
                         <a href="javascript:void(0)" onclick="alternarTelas('register-section', 'login-section')" class="text-blue-600 hover:underline">Voltar ao Login</a>
                     </p>
                 </div>
+
+                <div id="register-manager-section" class="hidden text-center">
+                    <h2 class="font-bold mb-4 text-gray-700">Novo Cadastro</h2>
+                    <input type="text" id="reg-man-nome" placeholder="Nome Completo" class="w-full mb-2 p-2 border rounded text-sm text-center">
+                    <input type="email" id="reg-man-email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded text-sm text-center">
+                    <input type="password" id="reg-man-senha" placeholder="Crie uma Senha" class="w-full mb-4 p-2 border rounded text-sm text-center">
+                    <input type="password" id="manager-password" placeholder="Insira a senha de coordenador" class="w-full mb-4 p-2 border rounded text-sm text-center">
+                    
+                    <button onclick="fazerCadastro()" class="w-full bg-orange-500 text-white p-2 rounded hover:bg-orange-600 transition font-bold mb-4">Finalizar Cadastro</button>
+                    
+                    <p class="text-xs text-gray-500">Já tem conta? 
+                        <a href="javascript:void(0)" onclick="alternarTelas('register-manager-section', 'login-section')" class="text-blue-600 hover:underline">Voltar ao Login</a>
+                    </p>
+                </div>                
 
                 <div id="user-section" class="hidden mt-4">
                     <h2 class="text-lg font-bold mb-4 text-blue-600 border-b pb-2">Nova Reserva</h2>
@@ -114,6 +131,7 @@
         const COR_APROVADO = '#11f018';
         const N8N_WEBHOOK_URL = 'https://conta222.app.n8n.cloud/webhook-test/d6bb9b78-47c4-4ad8-9c4f-1fe9c3ea7a14';
         const N8N_HEADER_AUTH = 'l1U9D3w5B##441V8BdJ2n1YVP86jdO9T&4CcB$98';
+        const SENHA_ADMIN = 'admin_inframerica';
         let currentUser = null;
         let listaGlobalReservas = [];
 
@@ -141,7 +159,10 @@
                 eventClick: function(info) {
                     const detalhe = info.event.extendedProps.atividade;
                     const cor = info.event.extendedProps.color;
-                    alert('\nInício: ' + info.event.start.toLocaleString() + '\nFim: ' + info.event.end.toLocaleString() + '\nAtividade: ' + (detalhe || 'Sem descrição') + '\nStatus: ' + cor);
+                    alert('\nInício: ' + info.event.start.toLocaleString() +
+                          '\nFim: ' + info.event.end.toLocaleString() +
+                          '\nAtividade: ' + detalhe +
+                          '\nStatus: ' + cor);
                 }
             });
         
@@ -228,10 +249,27 @@
         
         // Função para enviar o cadastro para o n8n
         async function fazerCadastro() {
-            const nome = document.getElementById('reg-nome').value;
-            const email = document.getElementById('reg-email').value;
-            const senha = document.getElementById('reg-senha').value;
-        
+            //Checa se está na tela de registro de um manager
+            const tela_reg_man = document.getElementById('register-section').classList.contains('hidden');
+            let nome, senha, email, role;
+            
+            if(tela_reg_man) {
+                const senha_admin = document.getElementById('manager-password').value;
+                if(senha_admin != SENHA_ADMIN) { 
+                    alert('Insira a senha de admin correta!');
+                    return;
+                }
+                nome = document.getElementById('reg-man-nome').value;
+                email = document.getElementById('reg-man-email').value;
+                senha = document.getElementById('reg-man-senha').value;
+                role = 'manager';
+            }
+            else {
+                nome = document.getElementById('reg-nome').value;
+                email = document.getElementById('reg-email').value;
+                senha = document.getElementById('reg-senha').value;
+                role = 'user';
+            }
             if (!nome || !email || !senha) {
                 alert("Por favor, preencha todos os campos.");
                 return;
@@ -241,7 +279,8 @@
                 action: 'cadastro',
                 nome: nome,
                 email: email,
-                senha: senha // Lembre-se: em produção, o ideal é usar HTTPS e hashing
+                role: role,
+                senha: senha // Trocar para HTTPS posteriormente para segurança
             };
         
             try {
@@ -256,7 +295,8 @@
         
                 if (response.ok) {
                     alert("Cadastro realizado com sucesso! Agora você pode fazer login.");
-                    alternarTelas('register-section', 'login-section');
+                    if (role === 'manager') alternarTelas('register-manager-section', 'login-section');
+                    if (role === 'user') alternarTelas('register-section', 'login-section');
                 } else {
                     // Erro podendo ser de senha errada do Header Auth
                     alert("Erro no servidor (Status: " + response.status + ")");
@@ -304,12 +344,12 @@
                 });
         
                 if (response.ok) {
-                    //Pensar em colocar a resposta do n8n para poder salvar os dados no calendário
                     const resultado = await response.json();
                     
-                    //Atualizando lista e renderizando novamente
+                    //Atualizando lista e renderizando novamente calendario
                     listaGlobalReservas.push(resultado);
                     inicializarAgenda(listaGlobalReservas);
+
                     
                     alert(`Solicitação enviada!\n ID da solicitação:  ${resultado.id}`);
                 } else {
