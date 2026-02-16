@@ -143,18 +143,45 @@
                 initialView: 'dayGridMonth',
                 locale: 'pt-br',
                 headerToolbar: {
-                    left: 'prev,next today',
+                    left: 'prev,next',
                     center: 'title',
                     right: 'dayGridMonth'
                 },
-                events: reservas, // O n8n deve enviar os dados neste formato
+                events: reservas,
+                
+                eventContent: function(arg) {
+                    const id = arg.event.id || "00";
+                    const titulo = arg.event.title;
+                    const corStatus = arg.event.backgroundColor;
+                    const atividade = arg.event.extendedProps.atividade;
+        
+                    // Criamos a estrutura: [Bolinha] [ID] [Título]
+                    let arrayOfDomNodes = [
+                        // 1. A Bolinha Colorida
+                        document.createRange().createContextualFragment(
+                            `<div class="flex items-center gap-1 overflow-hidden">
+                                <span style="background-color: ${corStatus};" class="w-2 h-2 rounded-full flex-shrink-0"></span>
+                                <b class="text-[10px] text-gray-700">#${id}</b>
+                                <span class="truncate text-[10px]">${titulo}</span>
+                            </div>`
+                        )
+                    ];
+                    
+                    return { domNodes: arrayOfDomNodes };
+                },
                 eventClick: function(info) {
-                    const detalhe = info.event.extendedProps.atividade;
-                    const cor = info.event.extendedProps.color;
-                    alert('\nInício: ' + info.event.start.toLocaleString() +
-                          '\nFim: ' + info.event.end.toLocaleString() +
-                          '\nAtividade: ' + detalhe +
-                          '\nStatus: ' + cor);
+                    const idPedido = info.event.id || "N/A";
+                    const corStatus = info.event.backgroundColor || "Não definida";
+                    const detalhe = info.event.extendedProps.atividade|| "Sem descrição";
+                    // Exibição focada no ID conforme solicitado
+                    alert(
+                        `🆔 ID do Pedido: ${idPedido}` +
+                        `\n------------------------` +
+                        `\nAtividade: ${detalhe}` +
+                        `\nStatus (Cor): ${corStatus}` +
+                        `\nInício: ${info.event.start.toLocaleString()}` +
+                        `\nFim: ${info.event.end.toLocaleString()}`
+                    );
                 }
             });
         
@@ -394,6 +421,7 @@
                           PENDENTE
                       </span>
                     </div>
+                    <p class="text-xs text-gray-600 mb-3">ID do pedido: ${pedido.id}</p>
                     <p class="text-xs text-gray-600 mb-2">Atividade: ${pedido.atividade}</p>
                     <p class="text-xs text-gray-600 mb-2">Solicitantes: ${pedido.solicitantes}</p>
                     <p class="text-xs text-gray-600 mb-2">Coordenador responsável: ${pedido.coordenador}</p>
