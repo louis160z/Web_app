@@ -23,7 +23,7 @@
 <body class="bg-gray-100 p-4 md:p-8">
     <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">🚗 Agendamento do Caminhão Munck</h1>
 
-    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 items-start">
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 items-start justify-center">
 
         <div class="w-full lg:w-1/4 space-y-6">
             <div class="bg-white p-6 rounded-lg shadow-lg">
@@ -36,7 +36,7 @@
                     <p class="text-xs text-gray-500">Não tem conta? 
                         <a href="javascript:void(0)" onclick="alternarTelas('login-section', 'register-section')" class="text-blue-600 hover:underline">Cadastre-se aqui</a>
                     </p>
-                    <p class="text-xs text-gray-500">Deseja se tornar coordenador? 
+                    <p class="text-xs text-gray-500 mt-2">Deseja se tornar coordenador? 
                         <a href="javascript:void(0)" onclick="alternarTelas('login-section', 'register-manager-section')" class="text-blue-600 hover:underline">Cadastre-se como coordenador aqui</a>
                     </p>
                 </div>
@@ -73,10 +73,9 @@
                     
                     <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">COORDENADOR</h2>
                     <select id="coordenador" class="w-full mb-2 p-2 border rounded text-sm text-gray-800">
-                        <option value="" disabled selected hidden>Selecione o coordenador responsável</option>
-                        
-                        <option value="Gabriel Santos Meyer" class="text-gray-800">Gabriel Santos Meyer</option>
-                        <option value="Rogério Santos de Oliveira" class="text-gray-800">Rogério Santos de Oliveira</option>
+                        <option value="" disabled selected hidden>Coordenador responsável</option>
+                        <option value="Gabriel Santos Meyer">Gabriel Santos Meyer</option>
+                        <option value="Rogério Santos de Oliveira">Rogério Santos de Oliveira</option>
                     </select>
 
                     <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Solicitantes</h2>
@@ -96,19 +95,17 @@
             </div>
         </div>
 
-        <div class="w-full lg:w-2/4">
-            <div id="calendar-container" class="bg-white p-6 rounded-lg shadow-lg hidden">
+        <div id="calendar-container" class="w-full lg:w-2/4 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-lg">
                 <h2 class="text-xl font-bold mb-4 text-gray-700 flex items-center gap-2">
                     <span>📅</span> Agenda de Reservas
                 </h2>
                 <div id="calendario"></div>
             </div>
-            
-
         </div>
 
-        <div class="w-full lg:w-1/4">
-            <div id="manager-section" class="hidden bg-white p-6 rounded-lg shadow-lg border-t-4 border-red-500">
+        <div id="manager-section" class="w-full lg:w-1/4 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-red-500">
                 <h2 class="font-bold text-red-600 mb-4 text-lg flex items-center gap-2">
                     <span>🛡️</span> Painel do Gestor
                 </h2>
@@ -120,7 +117,6 @@
 
     </div>
 </body>
-
     <script>
       
 
@@ -137,10 +133,6 @@
 
 
 
-        /**
-         * Inicializa o calendário com os dados vindos do n8n.
-         * @param {Array} reservas - Lista de objetos [{atividade, start, end, color}]
-         */
         function inicializarAgenda(reservas) {
             
             // Mostra o container do calendário
@@ -180,6 +172,14 @@
                 minute: '2-digit'
             });
         }
+        
+        function atualizarReservas(resultado) {
+            if(resultado) listaGlobalReservas.push(resultado);
+            inicializarAgenda(listaGlobalReservas);
+            if(currentUser.role === 'manager') carregarSolicitacoes();
+        }
+        
+
         
 //----------------------------------------------------------------------------------------------------------
 
@@ -347,9 +347,7 @@
                     const resultado = await response.json();
                     
                     //Atualizando lista e renderizando novamente calendario
-                    listaGlobalReservas.push(resultado);
-                    inicializarAgenda(listaGlobalReservas);
-
+                    atualizarReservas(resultado);
                     
                     alert(`Solicitação enviada!\n ID da solicitação:  ${resultado.id}`);
                 } else {
@@ -419,7 +417,7 @@
         }
         
         async function decidirPedido(idPedido, acao) {
-
+            let resultado;
 
             try{
                 const response = await fetch(N8N_WEBHOOK_URL, {
@@ -431,6 +429,7 @@
                     alert("Erro no servidor (Status: " + response.status + ")");
                     return;
                 }
+                resultado = await response.json();
             } catch (error) {
                 // Erro podendo ser de senha errada do Header Auth
                 alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
@@ -438,6 +437,9 @@
             }
             
             console.log(`Pedido ${idPedido} foi ${acao}`);
+            
+
+            
             // Simulação visual: Remove o card da tela com um efeito simples
             const card = document.getElementById(`card-pedido-${idPedido}`);
             card.classList.add('opacity-50', 'pointer-events-none');
@@ -452,6 +454,15 @@
                     lista.innerHTML = "<p class='italic text-gray-400'>Nenhuma pendência no momento.</p>";
                 }
             }, 500);
+            
+            //Retirando o pedido da lista global
+            const listaAtualizada = listaGlobalReservas.filter(reserva => {
+                return reserva.id !== idPedido;
+            });
+            listaGlobalReservas = listaAtualizada;
+            
+            //Atualizando a lista global com novo pedido aprovado
+            atualizarReservas(resultado);
         }
     </script>
 </body>
