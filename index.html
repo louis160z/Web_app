@@ -132,7 +132,12 @@
         let listaGlobalReservas = [];
 
 
-
+        function defineStatus(hexadecimal){
+          if (hexadecimal === COR_PENDENTE) return 'Pendente';
+          if (hexadecimal === COR_APROVADO) return 'Aprovado';
+          if (hexadecimal === COR_NEGADO) return 'Negado';
+        }
+        
         function inicializarAgenda(reservas) {
             
             // Mostra o container do calendário
@@ -171,14 +176,14 @@
                 },
                 eventClick: function(info) {
                     const idPedido = info.event.id || "N/A";
-                    const corStatus = info.event.backgroundColor || "Não definida";
+                    const status = defineStatus(info.event.backgroundColor);
                     const detalhe = info.event.extendedProps.atividade|| "Sem descrição";
                     // Exibição focada no ID conforme solicitado
                     alert(
                         `🆔 ID do Pedido: ${idPedido}` +
                         `\n------------------------` +
                         `\nAtividade: ${detalhe}` +
-                        `\nStatus (Cor): ${corStatus}` +
+                        `\nStatus: ${status}` +
                         `\nInício: ${info.event.start.toLocaleString()}` +
                         `\nFim: ${info.event.end.toLocaleString()}`
                     );
@@ -206,6 +211,7 @@
             if(currentUser.role === 'manager') carregarSolicitacoes();
         }
         
+
 
         
 //----------------------------------------------------------------------------------------------------------
