@@ -147,7 +147,7 @@
         const COR_PROCESSADO = '#3b82f6';
         const COR_NEGADO = '#cf0a0a';
         const COR_APROVADO = '#11f018';
-        const N8N_WEBHOOK_URL = 'https://conta222.app.n8n.cloud/webhook-test/d6bb9b78-47c4-4ad8-9c4f-1fe9c3ea7a14';
+        const N8N_WEBHOOK_URL = 'https://conta222.app.n8n.cloud/webhook/d6bb9b78-47c4-4ad8-9c4f-1fe9c3ea7a14';
         const N8N_HEADER_AUTH = 'l1U9D3w5B##441V8BdJ2n1YVP86jdO9T&4CcB$98';
         const SENHA_ADMIN = 'admin_inframerica';
         let currentUser = null;
@@ -365,6 +365,7 @@
             const listaPendentes = listaGlobalReservas.filter(item => {
                     return item.color === COR_PENDENTE;
                 });
+                
         
             // Limpa o container antes de carregar
             listaContainer.innerHTML = "";
@@ -419,18 +420,22 @@
               return; //Apenas para não executar as próximas linhas de código
             }
             
-            // currentUser declarado fora da função: let currentUser = null;
-            currentUser = { role: resultado.role, nome: resultado.nome, email: resultado.email };
-            listaGlobalReservas = resultado.array_calendar;
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('user-section').classList.remove('hidden');
-
-            if (currentUser.role === 'manager') {
-                document.getElementById('manager-section').classList.remove('hidden');
-                carregarSolicitacoes();
+            if(resultado.status === 'sucesso'){
+                // currentUser declarado fora da função: let currentUser = null;
+                currentUser = { role: resultado.role, nome: resultado.nome, email: resultado.email };
+                listaGlobalReservas = resultado.array_calendar;
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('user-section').classList.remove('hidden');
+    
+                if (currentUser.role === 'manager') {
+                    document.getElementById('manager-section').classList.remove('hidden');
+                    carregarSolicitacoes();
+                }
+                //carregarDadosEAgenda();   
+                inicializarAgenda(listaGlobalReservas);
+            } else{
+              alert("Credenciais inválidas");
             }
-            //carregarDadosEAgenda();   
-            inicializarAgenda(listaGlobalReservas);
         }
 
 //----------------------------------------------------------------------------------------------------------
@@ -485,7 +490,7 @@
 //----------------------------------------------------------------------------------------------------------
 //                                        Funções de solicitações/decisões
 //----------------------------------------------------------------------------------------------------------
-        
+
         //Função para enviar o agendamento para a tabela N8N com as informações inseridas, mantendo-a como pendente
         async function solicitarAgendamento() {
             let resultado;
@@ -527,76 +532,87 @@
         //Deve ter alguma notificação para pedir para deletar ou cancelar o pedido ************
         //Função para deletar pedido na aba "minhas reservas"
         async function deletarPedido(idPedido){
-            let resultado;
-            const payload = {action: 'deletar_pedido', id: idPedido};
-            
-            try {
-              resultado = await postN8N(payload); // Solicitando serviços ao N8N
-            } catch(error) {
-              return; //Apenas para não executar as próximas linhas de código
-            }
-            
-            // Simulação visual: Remove o card da tela com um efeito simples
-            const card = document.getElementById(`card-pedido-${idPedido}`);
-            card.classList.add('opacity-50', 'pointer-events-none');
-            
-            setTimeout(() => {
-                card.remove();
-                alert(`Solicitação ${idPedido} deletada`);
+            const mensagem = `Deseja deletar o pedido de ID: ${idPedido}? 
+                              \n Essa ação não poderá ser desfeita`;
+
+            if(confirm(mensagem)){
+                let resultado;
+                const payload = {action: 'deletar_pedido', id: idPedido};
                 
-                // Se não sobrar nenhum card, mostra a mensagem de vazio
-                const lista = document.getElementById('lista-reservas-usuario');
-                if (lista.children.length === 0) {
-                    lista.innerHTML = "<p class='italic text-gray-400'>Nenhuma reserva realizada.</p>";
+                try {
+                  resultado = await postN8N(payload); // Solicitando serviços ao N8N
+                } catch(error) {
+                  return; //Apenas para não executar as próximas linhas de código
                 }
-            }, 500);
-
-
-            const listaAtualizada = listaGlobalReservas.filter(reserva => {
-                return reserva.id !== idPedido;
-            });
-            listaGlobalReservas = listaAtualizada;
-            atualizarReservas(); 
+                
+                // Simulação visual: Remove o card da tela com um efeito simples
+                const card = document.getElementById(`card-pedido-${idPedido}`);
+                card.classList.add('opacity-50', 'pointer-events-none');
+                
+                setTimeout(() => {
+                    card.remove();
+                    alert(`Solicitação ${idPedido} deletada`);
+                    
+                    // Se não sobrar nenhum card, mostra a mensagem de vazio
+                    const lista = document.getElementById('lista-reservas-usuario');
+                    if (lista.children.length === 0) {
+                        lista.innerHTML = "<p class='italic text-gray-400'>Nenhuma reserva realizada.</p>";
+                    }
+                }, 500);
+    
+    
+                const listaAtualizada = listaGlobalReservas.filter(reserva => {
+                    return reserva.id !== idPedido;
+                });
+                listaGlobalReservas = listaAtualizada;
+                atualizarReservas();
+            }
+        
         }
         
 //----------------------------------------------------------------------------------------------------------
 
         //Função para decidir pedido no painel do gestor, considerando o botão de aprovar ou negar
         async function decidirPedido(idPedido, acao) {
-            let resultado;
-            const payload = { action: 'decisao_gestor', id: idPedido, status: acao };
-            
-            try {
-              resultado = await postN8N(payload); // Solicitando serviços ao N8N
-            } catch(error) {
-              return; //Apenas para não executar as próximas linhas de código
-            }
-            
-            console.log(`Pedido ${idPedido} foi ${acao}`);
-            
-            // Simulação visual: Remove o card da tela com um efeito simples
-            const card = document.getElementById(`card-pedido-${idPedido}`);
-            card.classList.add('opacity-50', 'pointer-events-none');
-            
-            setTimeout(() => {
-                card.remove();
-                alert(`Solicitação ${idPedido} marcada como: ${acao.toUpperCase()}`);
+            const mensagem = `Deseja que o pedido de ID ${idPedido} seja ${acao}?
+                              \n Essa ação não poderá ser desfeita`;
+                              
+            if(confirm(mensagem)){
+                let resultado;
+                const payload = { action: 'decisao_gestor', id: idPedido, status: acao };
                 
-                // Se não sobrar nenhum card, mostra a mensagem de vazio
-                const lista = document.getElementById('lista-pendente');
-                if (lista.children.length === 0) {
-                    lista.innerHTML = "<p class='italic text-gray-400'>Nenhuma pendência no momento.</p>";
+                try {
+                  resultado = await postN8N(payload); // Solicitando serviços ao N8N
+                } catch(error) {
+                  return; //Apenas para não executar as próximas linhas de código
                 }
-            }, 500);
-            
-            //Retirando o pedido da lista global
-            const listaAtualizada = listaGlobalReservas.filter(reserva => {
-                return reserva.id !== idPedido;
-            });
-            listaGlobalReservas = listaAtualizada;
-            
-            //Atualizando a lista global com novo pedido aprovado
-            atualizarReservas(resultado);
+                
+                console.log(`Pedido ${idPedido} foi ${acao}`);
+                
+                // Simulação visual: Remove o card da tela com um efeito simples
+                const card = document.getElementById(`card-pedido-${idPedido}`);
+                card.classList.add('opacity-50', 'pointer-events-none');
+                
+                setTimeout(() => {
+                    card.remove();
+                    alert(`Solicitação ${idPedido} marcada como: ${acao.toUpperCase()}`);
+                    
+                    // Se não sobrar nenhum card, mostra a mensagem de vazio
+                    const lista = document.getElementById('lista-pendente');
+                    if (lista.children.length === 0) {
+                        lista.innerHTML = "<p class='italic text-gray-400'>Nenhuma pendência no momento.</p>";
+                    }
+                }, 500);
+                
+                //Retirando o pedido da lista global
+                const listaAtualizada = listaGlobalReservas.filter(reserva => {
+                    return reserva.id !== idPedido;
+                });
+                listaGlobalReservas = listaAtualizada;
+                
+                //Atualizando a lista global com novo pedido aprovado
+                atualizarReservas(resultado);
+            }
         }
     </script>
 </body>
