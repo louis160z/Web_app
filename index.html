@@ -69,8 +69,13 @@
                 </div>                
 
                 <div id="user-section" class="hidden mt-4">
-                    <h2 class="text-lg font-bold mb-4 text-blue-600 border-b pb-2">Nova Reserva</h2>
-                    
+                    <h2 class="text-lg flex justify-between items-center font-bold mb-4 text-blue-600 border-b pb-2">
+                        Nova Reserva
+                        <button onclick="alternarTelas('user-section','minhas-reservas-section'); carregarReservasUsuario()" 
+                            class="text-[10px] border border-blue-600 text-blue-600 px-3 py-1 rounded-full font-medium hover:bg-blue-50 transition">
+                            Minhas reservas
+                        </button>
+                    </h2>
                     <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">COORDENADOR</h2>
                     <select id="coordenador" class="w-full mb-2 p-2 border rounded text-sm text-gray-800">
                         <option value="" disabled selected hidden>Coordenador responsável</option>
@@ -91,6 +96,20 @@
                     <input type="datetime-local" id="reserva-final" class="w-full mb-4 p-2 border rounded text-sm">
                     
                     <button onclick="solicitarAgendamento()" class="w-full bg-green-500 text-white p-2 rounded font-bold hover:bg-green-600 transition">Solicitar Reserva</button>
+                </div>
+                
+                <div id="minhas-reservas-section" class="hidden mt-4">
+                    <h2 class="text-lg flex justify-between items-center font-bold mb-4 text-blue-600 border-b pb-2">
+                        Minhas reservas
+                        <button onclick="alternarTelas('minhas-reservas-section','user-section')" 
+                            class="text-[10px] border border-blue-600 text-blue-600 px-3 py-1 rounded-full font-medium hover:bg-blue-50 transition">
+                            Nova reserva
+                        </button>
+                    </h2>
+                    
+                    <div id="lista-reservas-usuario" class="text-sm text-gray-600 space-y-2">
+                        <p class="italic">Carregando solicitações...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -133,9 +152,12 @@
 
 
         function defineStatus(hexadecimal){
-          if (hexadecimal === COR_PENDENTE) return 'Pendente';
-          if (hexadecimal === COR_APROVADO) return 'Aprovado';
-          if (hexadecimal === COR_NEGADO) return 'Negado';
+          switch(hexadecimal){
+            case COR_PENDENTE: return 'Pendente'; break;
+            case COR_APROVADO: return 'Aprovado'; break;
+            case COR_NEGADO: return 'Negado'; break;
+            default: return 'Indefinido'; break;
+          }
         }
         
         function inicializarAgenda(reservas) {
@@ -177,7 +199,7 @@
                 eventClick: function(info) {
                     const idPedido = info.event.id || "N/A";
                     const status = defineStatus(info.event.backgroundColor);
-                    const detalhe = info.event.extendedProps.atividade|| "Sem descrição";
+                    const detalhe = info.event.extendedProps.atividade || "Sem descrição";
                     // Exibição focada no ID conforme solicitado
                     alert(
                         `🆔 ID do Pedido: ${idPedido}` +
@@ -211,7 +233,11 @@
             if(currentUser.role === 'manager') carregarSolicitacoes();
         }
         
-
+        // Função genérica para trocar visibilidade entre duas seções
+        function alternarTelas(idSair, idEntrar) {
+            document.getElementById(idSair).classList.add('hidden');
+            document.getElementById(idEntrar).classList.remove('hidden');
+        }
 
         
 //----------------------------------------------------------------------------------------------------------
@@ -274,11 +300,7 @@
         }       
         
         
-        // Função genérica para trocar visibilidade entre duas seções
-        function alternarTelas(idSair, idEntrar) {
-            document.getElementById(idSair).classList.add('hidden');
-            document.getElementById(idEntrar).classList.remove('hidden');
-        }
+
         
         // Função para enviar o cadastro para o n8n
         async function fazerCadastro() {
@@ -342,7 +364,7 @@
         
 //----------------------------------------------------------------------------------------------------------
         
-
+        
         async function solicitarAgendamento() {
             const inicio = document.getElementById('reserva-inicial').value;
             const fim = document.getElementById('reserva-final').value;
@@ -353,12 +375,12 @@
             const payload = {
                 action: 'agendamento',
                 nome: currentUser.nome,
-                user: currentUser.email,
                 data_inicio: inicio,
                 data_fim: fim,
                 atividade: atividade,
                 solicitantes: solicitantes,
-                coordenador: coordenador
+                coordenador: coordenador,
+                email: currentUser.email
             };
             
             if(!atividade || !inicio || !fim || !solicitantes || !coordenador){
@@ -391,6 +413,57 @@
                 // Erro podendo ser de senha errada do Header Auth
                 alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
             }
+        }
+
+        async function carregarReservasUsuario() {
+            //lista com cada div de pendência
+            const listaContainer = document.getElementById('lista-reservas-usuario');
+            
+            //lista com cada pendência em formato json
+            const listaUsuario = listaGlobalReservas.filter(item => {
+                    return item.email === currentUser.email;
+                });
+                
+        
+            // Limpa o container antes de carregar
+            listaContainer.innerHTML = "";
+        
+            if (listaUsuario.length === 0) {
+                listaContainer.innerHTML = "<p class='italic text-gray-400'>Nenhuma reserva realizada.</p>";
+                return;
+            }
+        
+            // Cria o HTML para cada pedido
+            listaUsuario.forEach(pedido => {
+                const card = document.createElement('div');
+                card.className = "bg-gray-50 p-3 border rounded-md shadow-sm border-l-4 border-gray-800 mb-3";
+                card.id = `card-pedido-${pedido.id}`; // ID único para remover depois
+        
+                card.innerHTML = `
+                   <div class="flex justify-between gap-2">
+                      <span class="font-bold text-gray-800">
+                          ${pedido.nome} </span>
+                      <span class="text-[11px] text-gray-900 font-medium">
+                          Pedido feito dia ${formatarDataBR(pedido.createdAt).split(',')[0]} </span>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-3">ID do pedido: ${pedido.id}</p>
+                    <p class="text-xs text-gray-600 mb-2">Atividade: ${pedido.atividade}</p>
+                    <p class="text-xs text-gray-600 mb-2">Solicitantes: ${pedido.solicitantes}</p>
+                    <p class="text-xs text-gray-600 mb-2">Coordenador responsável: ${pedido.coordenador}</p>
+                    <div class="text-[10px] text-gray-500 mb-3">
+                        <p>📅 Inicio:  ${formatarDataBR(pedido.start)}</p>
+                        <p>🏁 Fim:     ${formatarDataBR(pedido.end)}</p>
+                    </div>
+                    <div class="flex justify-end mt-2">
+                        <button onclick="deletarPedido(${pedido.id})" 
+                            class="p-2 text-red-500 bg-red-50 rounded-md hover:bg-red-500 hover:text-white transition-all duration-200 shadow-sm"
+                            title="Excluir solicitação">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+                listaContainer.appendChild(card);
+            });
         }
 
         async function carregarSolicitacoes() {
@@ -448,6 +521,46 @@
                 `;
                 listaContainer.appendChild(card);
             });
+        }
+        //Deve ter alguma notificação para pedir para deletar ou cancelar o pedido ************
+        async function deletarPedido(idPedido){
+            try{
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', web_authentication: N8N_HEADER_AUTH },
+                    body: JSON.stringify({ action: 'deletar_pedido', id: idPedido})
+                });
+                if (!response.ok) {
+                    alert("Erro no servidor (Status: " + response.status + ")");
+                    return;
+                }
+            } catch (error) {
+                // Erro podendo ser de senha errada do Header Auth
+                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
+                return;
+            }
+            
+            // Simulação visual: Remove o card da tela com um efeito simples
+            const card = document.getElementById(`card-pedido-${idPedido}`);
+            card.classList.add('opacity-50', 'pointer-events-none');
+            
+            setTimeout(() => {
+                card.remove();
+                alert(`Solicitação ${idPedido} deletada`);
+                
+                // Se não sobrar nenhum card, mostra a mensagem de vazio
+                const lista = document.getElementById('lista-reservas-usuario');
+                if (lista.children.length === 0) {
+                    lista.innerHTML = "<p class='italic text-gray-400'>Nenhuma reserva realizada.</p>";
+                }
+            }, 500);
+
+
+            const listaAtualizada = listaGlobalReservas.filter(reserva => {
+                return reserva.id !== idPedido;
+            });
+            listaGlobalReservas = listaAtualizada;
+            atualizarReservas(); 
         }
         
         async function decidirPedido(idPedido, acao) {
