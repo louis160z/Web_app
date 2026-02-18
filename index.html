@@ -138,6 +138,9 @@
 </body>
     <script>
       
+//----------------------------------------------------------------------------------------------------------
+//                                          CONSTANTES E VARIÁVEIS GLOBAIS
+//----------------------------------------------------------------------------------------------------------
 
 
         const COR_PENDENTE = '#f59e0b';
@@ -150,7 +153,16 @@
         let currentUser = null;
         let listaGlobalReservas = [];
 
+//----------------------------------------------------------------------------------------------------------
+//                                                FUNÇÕES
+//----------------------------------------------------------------------------------------------------------
 
+
+//----------------------------------------------------------------------------------------------------------
+//                                            Funções auxiliares
+//----------------------------------------------------------------------------------------------------------
+
+        //Função que transforma hexadecimal em uma das cores pré-definidas
         function defineStatus(hexadecimal){
           switch(hexadecimal){
             case COR_PENDENTE: return 'Pendente'; break;
@@ -159,7 +171,95 @@
             default: return 'Indefinido'; break;
           }
         }
-        
+
+//----------------------------------------------------------------------------------------------------------
+
+        //Função apenas para transformar a data estilo YYYY-mm-DDThh:MM em DD/mm/YYYY, hh:MM
+        function formatarDataBR(dataISO) {
+            if (!dataISO) return "Data inválida";
+            return new Date(dataISO).toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+//----------------------------------------------------------------------------------------------------------
+
+        //Função utilizada para atualizar o calendário de reservas, solicitações no painel do gestor e das reservas do usuario
+        function atualizarReservas(resultado) {
+            const tela_minhas_reservas = document.getElementById('user-section').classList.contains('hidden');
+            if(resultado) listaGlobalReservas.push(resultado);
+            inicializarAgenda(listaGlobalReservas); //Atualiza agenda
+            if(currentUser.role === 'manager') carregarSolicitacoes(); //Atualiza painel do gestor
+            if (tela_minhas_reservas) carregarReservasUsuario(); //Atualiza minhas reservas do usuário
+        }
+
+//----------------------------------------------------------------------------------------------------------
+
+        // Função genérica para trocar visibilidade entre duas seções
+        function alternarTelas(idSair, idEntrar) {
+            document.getElementById(idSair).classList.add('hidden');
+            document.getElementById(idEntrar).classList.remove('hidden');
+        }
+
+//----------------------------------------------------------------------------------------------------------
+
+        // Função auxiliar de print para carregar os cards de minhas-reservas e painel-gestor
+        function stringBaseCard(pedido) {
+                  return `
+                  <div class="flex justify-between gap-2">
+                      <span class="font-bold text-gray-800">
+                          ${pedido.nome} </span>
+                      <span class="text-[11px] text-gray-900 font-medium">
+                          Pedido feito dia ${formatarDataBR(pedido.createdAt).split(',')[0]} </span>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-3">ID do pedido: ${pedido.id}</p>
+                    <p class="text-xs text-gray-600 mb-2">Atividade: ${pedido.atividade}</p>
+                    <p class="text-xs text-gray-600 mb-2">Solicitantes: ${pedido.solicitantes}</p>
+                    <p class="text-xs text-gray-600 mb-2">Coordenador responsável: ${pedido.coordenador}</p>
+                    <div class="text-[10px] text-gray-500 mb-3">
+                        <p>📅 Inicio:  ${formatarDataBR(pedido.start)}</p>
+                        <p>🏁 Fim:     ${formatarDataBR(pedido.end)}</p>
+                    </div>
+                    `
+        }
+
+//----------------------------------------------------------------------------------------------------------
+//                                            Funções de POST
+//----------------------------------------------------------------------------------------------------------
+
+        //Função para solicitar serviço ao N8N
+        async function postN8N(payload){
+          let response;
+            try{
+                response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', web_authentication: N8N_HEADER_AUTH },
+                    body: JSON.stringify(payload)
+                });
+            } catch (error) {
+                // Erro podendo ser de senha errada do Header Auth
+                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
+                throw new Error();
+                return;
+            }
+            if (!response.ok) {
+                alert("Erro no servidor (Status: " + response.status + ")");
+                throw new Error();
+                return;
+            }
+            const resultado = await response.json();
+            return resultado;
+        }
+
+//----------------------------------------------------------------------------------------------------------
+//                                    Funções de de rederização/atualização
+//----------------------------------------------------------------------------------------------------------
+
+        //Função para carregar agenda
         function inicializarAgenda(reservas) {
             
             // Mostra o container do calendário
@@ -182,9 +282,8 @@
                     const corStatus = arg.event.backgroundColor;
                     const atividade = arg.event.extendedProps.atividade;
         
-                    // Criamos a estrutura: [Bolinha] [ID] [Título]
+                    // Estrutura: [Bolinha] [ID] [Título]
                     let arrayOfDomNodes = [
-                        // 1. A Bolinha Colorida
                         document.createRange().createContextualFragment(
                             `<div class="flex items-center gap-1 overflow-hidden">
                                 <span style="background-color: ${corStatus};" class="w-2 h-2 rounded-full flex-shrink-0"></span>
@@ -214,35 +313,95 @@
         
             calendar.render();
         }
+
+//----------------------------------------------------------------------------------------------------------
+
+        //Função para carregar as reservas do usuário na sua aba de "minhas reservas"
+        async function carregarReservasUsuario() {
+            //lista com cada div de pendência
+            const listaContainer = document.getElementById('lista-reservas-usuario');
+            
+            //lista com cada pendência em formato json
+            const listaUsuario = listaGlobalReservas.filter(item => {
+                    return item.email === currentUser.email;
+                });
         
-        //Função apenas para transformar a data 2026-02-15T17:23 em 15/02/2026, 17:23
-        function formatarDataBR(dataISO) {
-            if (!dataISO) return "Data inválida";
-            return new Date(dataISO).toLocaleString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+            // Limpa o container antes de carregar
+            listaContainer.innerHTML = "";
+        
+            if (listaUsuario.length === 0) {
+                listaContainer.innerHTML = "<p class='italic text-gray-400'>Nenhuma reserva realizada.</p>";
+                return;
+            }
+        
+            // Cria o HTML para cada pedido
+            listaUsuario.forEach(pedido => {
+                const card = document.createElement('div');
+                card.className = "bg-gray-50 p-3 border rounded-md shadow-sm border-l-4 border-gray-800 mb-3";
+                card.id = `card-pedido-${pedido.id}`; // ID único para remover depois
+        
+                card.innerHTML = `
+                   ${stringBaseCard(pedido)}
+                    <div class="flex justify-end mt-2">
+                        <button onclick="deletarPedido(${pedido.id})" 
+                            class="p-2 text-red-500 bg-red-50 rounded-md hover:bg-red-500 hover:text-white transition-all duration-200 shadow-sm"
+                            title="Excluir solicitação">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+                listaContainer.appendChild(card);
+            });
+        }
+
+//----------------------------------------------------------------------------------------------------------
+
+        //Função de carregar o Painel do gestor
+        async function carregarSolicitacoes() {
+            //lista com cada div de pendência
+            const listaContainer = document.getElementById('lista-pendente');
+            
+            //lista com cada pendência em formato json
+            const listaPendentes = listaGlobalReservas.filter(item => {
+                    return item.color === COR_PENDENTE;
+                });
+        
+            // Limpa o container antes de carregar
+            listaContainer.innerHTML = "";
+        
+            if (listaPendentes.length === 0) {
+                listaContainer.innerHTML = "<p class='italic text-gray-400'>Nenhuma pendência no momento.</p>";
+                return;
+            }
+        
+            // Cria o HTML para cada pedido
+            listaPendentes.forEach(pedido => {
+                const card = document.createElement('div');
+                card.className = "bg-gray-50 p-3 border rounded-md shadow-sm border-l-4 border-orange-400 mb-3";
+                card.id = `card-pedido-${pedido.id}`; // ID único para remover depois
+        
+                card.innerHTML = `
+                   ${stringBaseCard(pedido)}
+                    <div class="flex gap-2">
+                        <button onclick="decidirPedido(${pedido.id}, 'aprovado')" 
+                            class="flex-1 bg-green-500 text-white py-1 rounded text-xs hover:bg-green-600 transition">
+                            ✅ Aprovar
+                        </button>
+                        <button onclick="decidirPedido(${pedido.id}, 'negado')" 
+                            class="flex-1 bg-red-100 text-red-600 py-1 rounded text-xs hover:bg-red-200 transition">
+                            ❌ Negar
+                        </button>
+                    </div>
+                `;
+                listaContainer.appendChild(card);
             });
         }
         
-        function atualizarReservas(resultado) {
-            if(resultado) listaGlobalReservas.push(resultado);
-            inicializarAgenda(listaGlobalReservas);
-            if(currentUser.role === 'manager') carregarSolicitacoes();
-        }
-        
-        // Função genérica para trocar visibilidade entre duas seções
-        function alternarTelas(idSair, idEntrar) {
-            document.getElementById(idSair).classList.add('hidden');
-            document.getElementById(idEntrar).classList.remove('hidden');
-        }
-
-        
+//----------------------------------------------------------------------------------------------------------
+//                                            Funções de cadastro
 //----------------------------------------------------------------------------------------------------------
 
-
+        //Função para login
         async function fazerLogin() {
             const email_login = document.getElementById('email').value;
             const senha_login = document.getElementById('senha').value;
@@ -252,61 +411,35 @@
                 return;
             }
             //Dados para mandar para o n8n
-            const payload = {
-                email: email_login,
-                senha: senha_login,
-                action: 'login'
-            };
-        
-            try {
-                const response = await fetch(N8N_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      web_authentication: N8N_HEADER_AUTH
-                    },
-                    body: JSON.stringify(payload)
-                });
-        
-                if (response.ok) {
-                    const resultado = await response.json();
-        
-                    if (resultado.status === 'sucesso') {
-                        // currentUser declarado fora da função: let currentUser = null;
-                        currentUser = { role: resultado.role, nome: resultado.nome, email: resultado.email };
-                        listaGlobalReservas = resultado.array_calendar;
-                        document.getElementById('login-section').classList.add('hidden');
-                        document.getElementById('user-section').classList.remove('hidden');
+            const payload = {email: email_login, senha: senha_login, action: 'login'};
             
-                        if (currentUser.role === 'manager') {
-                            document.getElementById('manager-section').classList.remove('hidden');
-                            carregarSolicitacoes();
-                        }
-                        //carregarDadosEAgenda();   
-                        inicializarAgenda(listaGlobalReservas);
-
-                    } else {
-                      // Mensagem de erro que seria mandada devido à processos internos no N8N
-                        alert("Erro: " + (resultado.mensagem || "Credenciais inválidas")); //Não implementado o campo mensagens como resposta no n8n
-                    }
-                } else {
-                    // Erro podendo ser de senha errada do Header Auth
-                    alert("Erro no servidor (Status: " + response.status + ")");
-                }
-            } catch (error) {
-                // Captura erros de conexão (n8n offline, etc)
-                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
+            try {
+              resultado = await postN8N(payload); // Solicitando serviços ao N8N
+            } catch(error) {
+              return; //Apenas para não executar as próximas linhas de código
             }
-        }       
-        
-        
+            
+            // currentUser declarado fora da função: let currentUser = null;
+            currentUser = { role: resultado.role, nome: resultado.nome, email: resultado.email };
+            listaGlobalReservas = resultado.array_calendar;
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('user-section').classList.remove('hidden');
 
+            if (currentUser.role === 'manager') {
+                document.getElementById('manager-section').classList.remove('hidden');
+                carregarSolicitacoes();
+            }
+            //carregarDadosEAgenda();   
+            inicializarAgenda(listaGlobalReservas);
+        }
+
+//----------------------------------------------------------------------------------------------------------
         
         // Função para enviar o cadastro para o n8n
         async function fazerCadastro() {
             //Checa se está na tela de registro de um manager
             const tela_reg_man = document.getElementById('register-section').classList.contains('hidden');
-            let nome, senha, email, role;
+            let nome, senha, email, role, resultado;
             
             if(tela_reg_man) {
                 const senha_admin = document.getElementById('manager-password').value;
@@ -337,35 +470,25 @@
                 role: role,
                 senha: senha // Trocar para HTTPS posteriormente para segurança
             };
-        
+            
             try {
-                const response = await fetch(N8N_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      web_authentication: N8N_HEADER_AUTH
-                    },
-                    body: JSON.stringify(payload)
-                });
-        
-                if (response.ok) {
-                    alert("Cadastro realizado com sucesso! Agora você pode fazer login.");
-                    if (role === 'manager') alternarTelas('register-manager-section', 'login-section');
-                    if (role === 'user') alternarTelas('register-section', 'login-section');
-                } else {
-                    // Erro podendo ser de senha errada do Header Auth
-                    alert("Erro no servidor (Status: " + response.status + ")");
-                }
-            } catch (error) {
-                // Erro podendo ser de senha errada do Header Auth
-                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
+              resultado = await postN8N(payload);
+            } catch(error) {
+              return; //Apenas para não executar as próximas linhas de código
             }
+            
+            alert("Cadastro realizado com sucesso! Agora você pode fazer login.");
+            if (role === 'manager') alternarTelas('register-manager-section', 'login-section');
+            if (role === 'user') alternarTelas('register-section', 'login-section');
         }
         
 //----------------------------------------------------------------------------------------------------------
+//                                        Funções de solicitações/decisões
+//----------------------------------------------------------------------------------------------------------
         
-        
+        //Função para enviar o agendamento para a tabela N8N com as informações inseridas, mantendo-a como pendente
         async function solicitarAgendamento() {
+            let resultado;
             const inicio = document.getElementById('reserva-inicial').value;
             const fim = document.getElementById('reserva-final').value;
             const atividade = document.getElementById('atividade').value;
@@ -387,157 +510,30 @@
               alert("Por favor, preencha todos os campos.");
               return;
             }
-
+            
             try {
-                const response = await fetch(N8N_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      web_authentication: N8N_HEADER_AUTH
-                    },
-                    body: JSON.stringify(payload)
-                });
-        
-                if (response.ok) {
-                    const resultado = await response.json();
-                    
-                    //Atualizando lista e renderizando novamente calendario
-                    atualizarReservas(resultado);
-                    
-                    alert(`Solicitação enviada!\n ID da solicitação:  ${resultado.id}`);
-                } else {
-                    // Erro podendo ser de senha errada do Header Auth
-                    alert("Erro no servidor (Status: " + response.status + ")");
-                }
-            } catch (error) {
-                // Erro podendo ser de senha errada do Header Auth
-                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
+              resultado = await postN8N(payload);
+            } catch(error) {
+              return; //Apenas para não executar as próximas linhas de código
             }
+            
+            //Atualizando lista e renderizando novamente calendario
+            atualizarReservas(resultado);
+            alert(`Solicitação enviada!\n ID da solicitação:  ${resultado.id}`);
         }
 
-        async function carregarReservasUsuario() {
-            //lista com cada div de pendência
-            const listaContainer = document.getElementById('lista-reservas-usuario');
-            
-            //lista com cada pendência em formato json
-            const listaUsuario = listaGlobalReservas.filter(item => {
-                    return item.email === currentUser.email;
-                });
-                
-        
-            // Limpa o container antes de carregar
-            listaContainer.innerHTML = "";
-        
-            if (listaUsuario.length === 0) {
-                listaContainer.innerHTML = "<p class='italic text-gray-400'>Nenhuma reserva realizada.</p>";
-                return;
-            }
-        
-            // Cria o HTML para cada pedido
-            listaUsuario.forEach(pedido => {
-                const card = document.createElement('div');
-                card.className = "bg-gray-50 p-3 border rounded-md shadow-sm border-l-4 border-gray-800 mb-3";
-                card.id = `card-pedido-${pedido.id}`; // ID único para remover depois
-        
-                card.innerHTML = `
-                   <div class="flex justify-between gap-2">
-                      <span class="font-bold text-gray-800">
-                          ${pedido.nome} </span>
-                      <span class="text-[11px] text-gray-900 font-medium">
-                          Pedido feito dia ${formatarDataBR(pedido.createdAt).split(',')[0]} </span>
-                    </div>
-                    <p class="text-xs text-gray-600 mb-3">ID do pedido: ${pedido.id}</p>
-                    <p class="text-xs text-gray-600 mb-2">Atividade: ${pedido.atividade}</p>
-                    <p class="text-xs text-gray-600 mb-2">Solicitantes: ${pedido.solicitantes}</p>
-                    <p class="text-xs text-gray-600 mb-2">Coordenador responsável: ${pedido.coordenador}</p>
-                    <div class="text-[10px] text-gray-500 mb-3">
-                        <p>📅 Inicio:  ${formatarDataBR(pedido.start)}</p>
-                        <p>🏁 Fim:     ${formatarDataBR(pedido.end)}</p>
-                    </div>
-                    <div class="flex justify-end mt-2">
-                        <button onclick="deletarPedido(${pedido.id})" 
-                            class="p-2 text-red-500 bg-red-50 rounded-md hover:bg-red-500 hover:text-white transition-all duration-200 shadow-sm"
-                            title="Excluir solicitação">
-                            🗑️
-                        </button>
-                    </div>
-                `;
-                listaContainer.appendChild(card);
-            });
-        }
+//----------------------------------------------------------------------------------------------------------
 
-        async function carregarSolicitacoes() {
-            //lista com cada div de pendência
-            const listaContainer = document.getElementById('lista-pendente');
-            
-            //lista com cada pendência em formato json
-            const listaPendentes = listaGlobalReservas.filter(item => {
-                    return item.color === COR_PENDENTE;
-                });
-                
-        
-            // Limpa o container antes de carregar
-            listaContainer.innerHTML = "";
-        
-            if (listaPendentes.length === 0) {
-                listaContainer.innerHTML = "<p class='italic text-gray-400'>Nenhuma pendência no momento.</p>";
-                return;
-            }
-        
-            // Cria o HTML para cada pedido
-            listaPendentes.forEach(pedido => {
-                const card = document.createElement('div');
-                card.className = "bg-gray-50 p-3 border rounded-md shadow-sm border-l-4 border-orange-400 mb-3";
-                card.id = `card-pedido-${pedido.id}`; // ID único para remover depois
-        
-                card.innerHTML = `
-                   <div class="flex justify-between gap-2">
-                      <span class="font-bold text-gray-800">
-                          ${pedido.nome} </span>
-                      <span class="text-[11px] text-gray-900 font-medium">
-                          Pedido feito dia ${formatarDataBR(pedido.createdAt).split(',')[0]} </span>
-                      <span class="text-[10px] bg-orange-100 text-orange-600 px-1 rounded font-bold">
-                          PENDENTE
-                      </span>
-                    </div>
-                    <p class="text-xs text-gray-600 mb-3">ID do pedido: ${pedido.id}</p>
-                    <p class="text-xs text-gray-600 mb-2">Atividade: ${pedido.atividade}</p>
-                    <p class="text-xs text-gray-600 mb-2">Solicitantes: ${pedido.solicitantes}</p>
-                    <p class="text-xs text-gray-600 mb-2">Coordenador responsável: ${pedido.coordenador}</p>
-                    <div class="text-[10px] text-gray-500 mb-3">
-                        <p>📅 Inicio:  ${formatarDataBR(pedido.start)}</p>
-                        <p>🏁 Fim:     ${formatarDataBR(pedido.end)}</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="decidirPedido(${pedido.id}, 'aprovado')" 
-                            class="flex-1 bg-green-500 text-white py-1 rounded text-xs hover:bg-green-600 transition">
-                            ✅ Aprovar
-                        </button>
-                        <button onclick="decidirPedido(${pedido.id}, 'negado')" 
-                            class="flex-1 bg-red-100 text-red-600 py-1 rounded text-xs hover:bg-red-200 transition">
-                            ❌ Negar
-                        </button>
-                    </div>
-                `;
-                listaContainer.appendChild(card);
-            });
-        }
         //Deve ter alguma notificação para pedir para deletar ou cancelar o pedido ************
+        //Função para deletar pedido na aba "minhas reservas"
         async function deletarPedido(idPedido){
-            try{
-                const response = await fetch(N8N_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', web_authentication: N8N_HEADER_AUTH },
-                    body: JSON.stringify({ action: 'deletar_pedido', id: idPedido})
-                });
-                if (!response.ok) {
-                    alert("Erro no servidor (Status: " + response.status + ")");
-                    return;
-                }
-            } catch (error) {
-                // Erro podendo ser de senha errada do Header Auth
-                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
-                return;
+            let resultado;
+            const payload = {action: 'deletar_pedido', id: idPedido};
+            
+            try {
+              resultado = await postN8N(payload); // Solicitando serviços ao N8N
+            } catch(error) {
+              return; //Apenas para não executar as próximas linhas de código
             }
             
             // Simulação visual: Remove o card da tela com um efeito simples
@@ -563,29 +559,20 @@
             atualizarReservas(); 
         }
         
+//----------------------------------------------------------------------------------------------------------
+
+        //Função para decidir pedido no painel do gestor, considerando o botão de aprovar ou negar
         async function decidirPedido(idPedido, acao) {
             let resultado;
-
-            try{
-                const response = await fetch(N8N_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', web_authentication: N8N_HEADER_AUTH },
-                    body: JSON.stringify({ action: 'decisao_gestor', id: idPedido, status: acao })
-                });
-                if (!response.ok) {
-                    alert("Erro no servidor (Status: " + response.status + ")");
-                    return;
-                }
-                resultado = await response.json();
-            } catch (error) {
-                // Erro podendo ser de senha errada do Header Auth
-                alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
-                return;
+            const payload = { action: 'decisao_gestor', id: idPedido, status: acao };
+            
+            try {
+              resultado = await postN8N(payload); // Solicitando serviços ao N8N
+            } catch(error) {
+              return; //Apenas para não executar as próximas linhas de código
             }
             
             console.log(`Pedido ${idPedido} foi ${acao}`);
-            
-
             
             // Simulação visual: Remove o card da tela com um efeito simples
             const card = document.getElementById(`card-pedido-${idPedido}`);
