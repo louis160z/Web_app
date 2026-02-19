@@ -1,0 +1,8 @@
+#calendario { max-height: 500px; margin-top: 20px; }
+.fc-event { cursor: pointer; }
+.fc-header-toolbar {
+    margin-bottom: 0.5rem !important;
+    font-size: 0.85rem;
+}
+.fc .fc-button { padding: 0.2rem 0.5rem !important; }
+.fc .fc-toolbar-title { font-size: 1.1rem !important; }
