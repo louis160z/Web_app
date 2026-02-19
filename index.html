@@ -174,6 +174,18 @@
 
 //----------------------------------------------------------------------------------------------------------
 
+        //Função que transforma hexadecimal em uma fonte (há a possibilidade de mesclar com defineStatus())
+        function defineFonte(hexadecimal){
+          switch(hexadecimal){
+            case COR_PENDENTE: return 'font-bold text-orange-600'; break;
+            case COR_APROVADO: return 'font-bold text-green-600'; break;
+            case COR_NEGADO: return 'font-bold text-red-600'; break;
+            default: return 'font-bold text-blue-600'; break;
+          }
+        }
+
+//----------------------------------------------------------------------------------------------------------
+
         //Função apenas para transformar a data estilo YYYY-mm-DDThh:MM em DD/mm/YYYY, hh:MM
         function formatarDataBR(dataISO) {
             if (!dataISO) return "Data inválida";
@@ -216,7 +228,7 @@
                       <span class="text-[11px] text-gray-900 font-medium">
                           Pedido feito dia ${formatarDataBR(pedido.createdAt).split(',')[0]} </span>
                     </div>
-                    <p class="text-xs text-gray-600 mb-3">ID do pedido: ${pedido.id}</p>
+                    <p class="text text-gray-600 mb-2">ID: #${pedido.id}</p>
                     <p class="text-xs text-gray-600 mb-2">Atividade: ${pedido.atividade}</p>
                     <p class="text-xs text-gray-600 mb-2">Solicitantes: ${pedido.solicitantes}</p>
                     <p class="text-xs text-gray-600 mb-2">Coordenador responsável: ${pedido.coordenador}</p>
@@ -256,7 +268,7 @@
         }
 
 //----------------------------------------------------------------------------------------------------------
-//                                    Funções de de rederização/atualização
+//                                    Funções de rederização/atualização
 //----------------------------------------------------------------------------------------------------------
 
         //Função para carregar agenda
@@ -272,7 +284,7 @@
                 headerToolbar: {
                     left: 'prev,next',
                     center: 'title',
-                    right: 'dayGridMonth'
+                    right: ''
                 },
                 events: reservas,
                 
@@ -296,15 +308,21 @@
                     return { domNodes: arrayOfDomNodes };
                 },
                 eventClick: function(info) {
-                    const idPedido = info.event.id || "N/A";
-                    const status = defineStatus(info.event.backgroundColor);
-                    const detalhe = info.event.extendedProps.atividade || "Sem descrição";
-                    // Exibição focada no ID conforme solicitado
+                    const idPedido = info.event.id || "Indefinido";
+                    const status = defineStatus(info.event.backgroundColor) || "Indefinido";
+                    const atividade = info.event.extendedProps.atividade || "Indefinido";
+                    const nome = info.event.extendedProps.nome || "Indefinido";
+                    const solicitantes = info.event.extendedProps.solicitantes || "Indefinido";
+                    const coordenador = info.event.extendedProps.coordenador || "Indefinido";
+
                     alert(
-                        `🆔 ID do Pedido: ${idPedido}` +
-                        `\n------------------------` +
-                        `\nAtividade: ${detalhe}` +
+                        `              🆔 ID: #${idPedido}` +
+                        `\nUsuário: ${nome}` +
+                        `\nAtividade: ${atividade}` +
+                        `\nSolicitantes: ${solicitantes}` +
+                        `\nCoordenador responsável: ${coordenador}` +
                         `\nStatus: ${status}` +
+                        `\n--------------------------------` +
                         `\nInício: ${info.event.start.toLocaleString()}` +
                         `\nFim: ${info.event.end.toLocaleString()}`
                     );
@@ -341,6 +359,10 @@
                 card.id = `card-pedido-${pedido.id}`; // ID único para remover depois
         
                 card.innerHTML = `
+                  <div class="text-center gap-2">
+                    <span class="${defineFonte(pedido.color)}">
+                        STATUS: ${defineStatus(pedido.color)} </span>
+                  </div>
                    ${stringBaseCard(pedido)}
                     <div class="flex justify-end mt-2">
                         <button onclick="deletarPedido(${pedido.id})" 
@@ -559,8 +581,7 @@
                         lista.innerHTML = "<p class='italic text-gray-400'>Nenhuma reserva realizada.</p>";
                     }
                 }, 500);
-    
-    
+
                 const listaAtualizada = listaGlobalReservas.filter(reserva => {
                     return reserva.id !== idPedido;
                 });
