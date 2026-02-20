@@ -104,7 +104,7 @@ function stringBaseCard(pedido) {
 async function postN8N(payload){
   let response;
     try{
-        response = await fetch('/api/enviar_solicitacao', {
+        response = await fetch('/api/enviar_solicitacoes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
