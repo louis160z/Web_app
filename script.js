@@ -358,6 +358,7 @@ async function fazerCadastro() {
       if(!resultado.sucesso){
         alert("Senha de admin errada! Por favor, insira a senha correta.");
         return;
+      }
     } catch(error) {
       return; //Apenas para não executar as próximas linhas de código
     }
