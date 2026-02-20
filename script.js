@@ -355,7 +355,7 @@ async function fazerCadastro() {
     try {
       resultado = await postN8N(payload);
 
-      if(!resultado.sucesso){
+      if(resultado.sucesso === false){
         alert("Senha de admin errada! Por favor, insira a senha correta.");
         return;
       }
