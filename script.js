@@ -322,14 +322,10 @@ async function fazerLogin() {
 async function fazerCadastro() {
     //Checa se está na tela de registro de um manager
     const tela_reg_man = document.getElementById('register-section').classList.contains('hidden');
-    let nome, senha, email, role, resultado;
+    let nome, senha, email, role, resultado, senha_admin;
     
     if(tela_reg_man) {
-        const senha_admin = document.getElementById('manager-password').value;
-        if(senha_admin != SENHA_ADMIN) { 
-            alert('Insira a senha de admin correta!');
-            return;
-        }
+        senha_admin = document.getElementById('manager-password').value;
         nome = document.getElementById('reg-man-nome').value;
         email = document.getElementById('reg-man-email').value;
         senha = document.getElementById('reg-man-senha').value;
@@ -353,9 +349,15 @@ async function fazerCadastro() {
         role: role,
         senha: senha // Trocar para HTTPS posteriormente para segurança
     };
+  
+    if(tela_reg_man) payload.senha_digitada = senha_admin; //Adiciona a senha digitada pelo usuario ao payload
     
     try {
       resultado = await postN8N(payload);
+
+      if(!resultado.sucesso){
+        alert("Senha de admin errada! Por favor, insira a senha correta.");
+        return;
     } catch(error) {
       return; //Apenas para não executar as próximas linhas de código
     }
