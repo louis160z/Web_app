@@ -321,7 +321,7 @@ async function fazerLogin() {
 // Função para enviar o cadastro para o n8n
 async function fazerCadastro() {
     //Checa se está na tela de registro de um manager
-    const tela_reg_man = document.getElementById('register-section').classList.contains('hidden');
+    const tela_reg_man = !document.getElementById('register-manager-section').classList.contains('hidden');
     let nome, senha, email, role, resultado, senha_admin;
     
     if(tela_reg_man) {
@@ -355,9 +355,11 @@ async function fazerCadastro() {
     try {
       resultado = await postN8N(payload);
 
-      if(resultado.sucesso === false){
+      if(resultado.sucesso === false && role === 'manager'){
         alert("Senha de admin errada! Por favor, insira a senha correta.");
         return;
+      } else {
+        alert("Ocorreu um erro no cadastro, por favor tente novamente");
       }
     } catch(error) {
       return; //Apenas para não executar as próximas linhas de código
