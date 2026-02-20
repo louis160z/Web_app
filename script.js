@@ -355,11 +355,13 @@ async function fazerCadastro() {
     try {
       resultado = await postN8N(payload);
 
-      if(resultado.sucesso === false && role === 'manager'){
+      if(resultado.sucesso === false && tela_reg_man){
         alert("Senha de admin errada! Por favor, insira a senha correta.");
         return;
-      } else {
-        alert("Ocorreu um erro no cadastro, por favor tente novamente");
+      }
+      if(resultado.usuario_existente) {
+        alert("Um usuário com esse e-mail já existe! \nInsira um email diferente.");
+        return;
       }
     } catch(error) {
       return; //Apenas para não executar as próximas linhas de código
