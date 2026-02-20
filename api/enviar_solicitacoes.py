@@ -26,7 +26,7 @@ class handler(BaseHTTPRequestHandler):
                 self.end_headers()
                 
                 # Mas enviamos um JSON avisando que a regra de negócio falhou
-                resposta_erro = {"sucesso": False, "mensagem": "Senha de coordenador incorreta!"}
+                resposta_erro = {"sucesso": False}
                 self.wfile.write(json.dumps(resposta_erro).encode())
                 return # Impede o envio para o n8n
         
