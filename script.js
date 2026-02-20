@@ -7,9 +7,6 @@ const COR_PENDENTE = '#f59e0b';
 const COR_PROCESSADO = '#3b82f6';
 const COR_NEGADO = '#cf0a0a';
 const COR_APROVADO = '#11f018';
-const N8N_WEBHOOK_URL = 'https://conta222.app.n8n.cloud/webhook/d6bb9b78-47c4-4ad8-9c4f-1fe9c3ea7a14';
-const N8N_HEADER_AUTH = 'l1U9D3w5B##441V8BdJ2n1YVP86jdO9T&4CcB$98';
-const SENHA_ADMIN = 'admin_inframerica';
 let currentUser = null;
 let listaGlobalReservas = [];
 
@@ -103,13 +100,13 @@ function stringBaseCard(pedido) {
 //                                            Funções de POST
 //----------------------------------------------------------------------------------------------------------
 
-//Função para solicitar serviço ao N8N
+//Função para solicitar serviço ao N8N, já criando mensagens de erros, sem precisar criá-las fora da função
 async function postN8N(payload){
   let response;
     try{
-        response = await fetch(N8N_WEBHOOK_URL, {
+        response = await fetch('/api/enviar_solicitacao', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', web_authentication: N8N_HEADER_AUTH },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
     } catch (error) {
@@ -123,8 +120,7 @@ async function postN8N(payload){
         throw new Error();
         return;
     }
-    const resultado = await response.json();
-    return resultado;
+    return await response.json();
 }
 
 //----------------------------------------------------------------------------------------------------------
