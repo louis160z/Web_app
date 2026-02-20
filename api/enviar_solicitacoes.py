@@ -14,7 +14,22 @@ class handler(BaseHTTPRequestHandler):
         # 2. Pega as chaves que estão escondidas no painel da Vercel
         N8N_URL = os.environ.get('N8N_WEBHOOK_URL')
         N8N_AUTH = os.environ.get('N8N_HEADER_AUTH')
+        SENHA_ADMIN_REAL = os.environ.get('SENHA_ADMIN')
 
+        if payload.get('role') == 'manager':
+            senha_digitada = payload.get('senha_digitada')
+            
+            if senha_digitada != SENHA_ADMIN_REAL:
+                # manda status 200 apesar de poder mandar 401 de senha errada para que o código continue para o .js e seja tratado lá
+                self.send_response(200) 
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                
+                # Mas enviamos um JSON avisando que a regra de negócio falhou
+                resposta_erro = {"sucesso": False, "mensagem": "Senha de coordenador incorreta!"}
+                self.wfile.write(json.dumps(resposta_erro).encode())
+                return # Impede o envio para o n8n
+        
         # 3. Faz o envio real (O usuário não vê isso acontecendo)
         response = requests.post(
             N8N_URL, 
