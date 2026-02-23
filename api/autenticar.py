@@ -26,24 +26,20 @@ class handler(BaseHTTPRequestHandler):
 
         try:
             if acao == 'login':
-                # Bate na porta de LOGIN do Supabase
                 url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
                 dados = {"email": email, "password": senha}
                 
                 resposta_supabase = requests.post(url, json=dados, headers=headers)
                 resultado = resposta_supabase.json()
 
-                # --- NOVO BLOCO DE DEBUG (O Interrogatório) ---
-                if "access_token" not in resultado:
-                    # Se não veio o token, vamos jogar a resposta nua e crua na tela do site!
-                    self.responder_json(200, {
-                        "sucesso": False, 
-                        "mensagem": f"Resposta do Supabase: {resultado} | URL tentada: {url}"
-                    })
+                # A VERIFICAÇÃO DEFINITIVA: Olha o status da resposta (400 = Erro, 200 = Sucesso)
+                if resposta_supabase.status_code != 200:
+                    # Pega a mensagem ('msg') que o Supabase mandou, ou usa uma padrão se não vier
+                    mensagem_erro = resultado.get("msg", "E-mail ou senha incorretos.")
+                    self.responder_json(200, {"sucesso": False, "mensagem": mensagem_erro})
                     return
-                # ----------------------------------------------
 
-                # Se chegou aqui, o token existe e deu tudo certo
+                # Se passou do if acima, o status foi 200 OK. O token com certeza existe!
                 self.responder_json(200, {
                     "sucesso": True, 
                     "access_token": resultado["access_token"],
@@ -51,8 +47,7 @@ class handler(BaseHTTPRequestHandler):
                 })
 
         except Exception as e:
-            # Isso vai mandar o erro técnico exato do Python para o pop-up do site
-            self.responder_json(200, {"sucesso": False, "mensagem": f"Erro técnico: {str(e)}"})
+            self.responder_json(200, {"sucesso": False, "mensagem": f"Erro no servidor: {str(e)}"})
 
     # Função auxiliar para não repetir código
     def responder_json(self, status, dicionario):
