@@ -369,15 +369,7 @@ async function fazerCadastro() {
     if(tela_reg_man) payload.senha_digitada = senha_admin; //Adiciona a senha digitada pelo usuario ao payload
     
     try {
-      resultado = await postN8N(payload);
-
-      if(resultado.sucesso === false && tela_reg_man){
-        alert("Senha de admin errada! Por favor, insira a senha correta.");
-        return;
-      }
-      if(resultado.usuario_existente) {
-        alert("Um usuário com esse e-mail já existe! \nInsira um email diferente.");
-        return;
+      resultado = await postN8N(payload, PATH_AUTENTICACAO);
       }
     } catch(error) {
       return; //Apenas para não executar as próximas linhas de código
