@@ -284,38 +284,46 @@ async function carregarSolicitacoes() {
 
 //Função para login
 async function fazerLogin() {
-    const email_login = document.getElementById('email').value;
-    const senha_login = document.getElementById('senha').value;
+    const email = document.getElementById('login-email').value;
+    const senha = document.getElementById('login-senha').value;
 
-    if (!email_login || !senha_login) {
-        alert("Por favor, preencha todos os campos.");
+    if (!email || !senha) {
+        alert("Preencha todos os campos.");
         return;
     }
-    //Dados para mandar para o n8n
-    const payload = {email: email_login, senha: senha_login, action: 'login'};
-    
-    try {
-      resultado = await postN8N(payload); // Solicitando serviços ao N8N
-    } catch(error) {
-      return; //Apenas para não executar as próximas linhas de código
-    }
-    
-    if(resultado.status === 'sucesso'){
-        // currentUser declarado fora da função: let currentUser = null;
-        currentUser = { role: resultado.role, nome: resultado.nome, email: resultado.email };
-        listaGlobalReservas = resultado.array_calendar;
-        document.getElementById('login-section').classList.add('hidden');
-        document.getElementById('user-section').classList.remove('hidden');
 
-        if (currentUser.role === 'manager') {
-            document.getElementById('manager-section').classList.remove('hidden');
-            carregarSolicitacoes();
+    const payload = { action: 'login', email: email, senha: senha };
+
+    try {
+        const resultado = await postN8N(payload, PATH_AUTENTICACAO);
+
+        if (resultado.sucesso === false) {
+            // Mostra o erro exato que o Supabase enviou (ex: "Invalid login credentials")
+            alert(resultado.mensagem);
+            return;
         }
-        //carregarDadosEAgenda();   
-        inicializarAgenda(listaGlobalReservas);
-    } else{
-      alert("Credenciais inválidas");
+
+    } catch (error) {
+        alert("Erro de conexão.");
     }
+    
+    // SALVANDO A CHAVE MESTRA DO USUÁRIO NO NAVEGADOR
+    localStorage.setItem('munck_token', resultado.access_token);
+    localStorage.setItem('munck_user_id', resultado.usuario.id);
+    
+    //Por enquanto sem nome e role indefinida, solicitação para o N8N posteriormente para obter essas informações
+    currentUser = { role: "manager", nome: "Nome indefinido", email: resultado.usuario }; 
+    listaGlobalReservas = resultado.array_calendar;
+    
+    document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('user-section').classList.remove('hidden');
+
+    if (currentUser.role === 'manager') {
+        document.getElementById('manager-section').classList.remove('hidden');
+        carregarSolicitacoes();
+    }
+    //carregarDadosEAgenda();   
+    inicializarAgenda(listaGlobalReservas);
 }
 
 //----------------------------------------------------------------------------------------------------------
