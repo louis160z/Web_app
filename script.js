@@ -7,6 +7,8 @@ const COR_PENDENTE = '#f59e0b';
 const COR_PROCESSADO = '#3b82f6';
 const COR_NEGADO = '#cf0a0a';
 const COR_APROVADO = '#11f018';
+const PATH_AUTENTICACAO = '/api/enviar_solicitacoes';
+const PATH_SOLCITACOES = '/api/autenticar';
 let currentUser = null;
 let listaGlobalReservas = [];
 
@@ -101,10 +103,10 @@ function stringBaseCard(pedido) {
 //----------------------------------------------------------------------------------------------------------
 
 //Função para solicitar serviço ao N8N, já criando mensagens de erros, sem precisar criá-las fora da função
-async function postN8N(payload){
+async function postN8N(payload, path = PATH_SOLICITACOES){
   let response;
     try{
-        response = await fetch('/api/enviar_solicitacoes', {
+        response = await fetch(path, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
