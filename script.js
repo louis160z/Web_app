@@ -284,7 +284,7 @@ async function carregarSolicitacoes() {
 
 //Função para login
 async function fazerLogin() {
-    let resultado; //varivel para armazenar o resultado retornado pela API de auth
+    let resultado_auth, resultado_n8n; //varivel para armazenar o resultado retornado pela API de auth
     const email = document.getElementById('login-email').value;
     const senha = document.getElementById('login-senha').value;
 
@@ -293,28 +293,33 @@ async function fazerLogin() {
         return;
     }
 
-    const payload = { action: 'login', email: email, senha: senha };
-
+    const payload_auth = { action: 'login', email: email, senha: senha };
+    const payload_n8n = {action: 'carregar_dados', email: email};
+    
     try {
-        resultado = await postN8N(payload, PATH_AUTENTICACAO);
+        resultado_auth = await postN8N(payload_auth, PATH_AUTENTICACAO);
 
-        if (resultado.sucesso === false) {
+        if (resultado_auth.sucesso === false) {
             // Mostra o erro exato que o Supabase enviou (ex: "Invalid login credentials")
             alert(resultado.mensagem);
             return;
         }
-
-    } catch (error) {
-        return;
+    } catch(error) {
+        return; //Apenas para não realizar as linhas abaixo
     }
     
+    try {
+      resultado_n8n = await postN8N(payload_n8n);
+    } catch(error) {
+      return; //Apenas para não realizar as linhas abaixo
+    }
     // SALVANDO A CHAVE MESTRA DO USUÁRIO NO NAVEGADOR
-    localStorage.setItem('munck_token', resultado.access_token);
-    localStorage.setItem('munck_user_id', resultado.usuario.id);
+    localStorage.setItem('munck_token', resultado_auth.access_token);
+    localStorage.setItem('munck_user_id', resultado_auth.usuario.id);
     
     //Por enquanto sem nome e role indefinida, solicitação para o N8N posteriormente para obter essas informações
-    currentUser = { role: "manager", nome: "Nome indefinido", email: resultado.usuario }; 
-    listaGlobalReservas = resultado.array_calendar;
+    currentUser = { role: resultado_n8n.role, nome: resultado_n8n.nome, email: email }; 
+    listaGlobalReservas = resultado_n8n.array_calendar;
     
     document.getElementById('login-section').classList.add('hidden');
     document.getElementById('user-section').classList.remove('hidden');
