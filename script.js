@@ -284,6 +284,7 @@ async function carregarSolicitacoes() {
 
 //Função para login
 async function fazerLogin() {
+    let resultado; //varivel para armazenar o resultado retornado pela API de auth
     const email = document.getElementById('login-email').value;
     const senha = document.getElementById('login-senha').value;
 
@@ -295,7 +296,7 @@ async function fazerLogin() {
     const payload = { action: 'login', email: email, senha: senha };
 
     try {
-        const resultado = await postN8N(payload, PATH_AUTENTICACAO);
+        resultado = await postN8N(payload, PATH_AUTENTICACAO);
 
         if (resultado.sucesso === false) {
             // Mostra o erro exato que o Supabase enviou (ex: "Invalid login credentials")
@@ -304,7 +305,7 @@ async function fazerLogin() {
         }
 
     } catch (error) {
-        alert("Erro de conexão.");
+        return;
     }
     
     // SALVANDO A CHAVE MESTRA DO USUÁRIO NO NAVEGADOR
