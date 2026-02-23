@@ -13,6 +13,7 @@ class handler(BaseHTTPRequestHandler):
         # Pega as chaves do cofre da Vercel
         SUPABASE_URL = os.environ.get('SUPABASE_URL')
         SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY')
+        SENHA_ADMIN_REAL = os.environ.get('SENHA_ADMIN')
 
         acao = payload.get('action')
         email = payload.get('email')
@@ -25,6 +26,9 @@ class handler(BaseHTTPRequestHandler):
         }
 
         try:
+            # ==========================================
+            # ROTA DE LOGIN
+            # ==========================================
             if acao == 'login':
                 url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
                 dados = {"email": email, "password": senha}
@@ -47,6 +51,44 @@ class handler(BaseHTTPRequestHandler):
                     "usuario": resultado["user"]
                 })
 
+
+
+            # ==========================================
+            # ROTA DE CADASTRO
+            # ==========================================
+            elif acao == 'cadastro':
+                nome = payload.get('nome')
+                role = payload.get('role')
+
+                if role == 'manager':
+                    senha_digitada = payload.get('senha_digitada')
+                    if senha_digitada != SENHA_ADMIN_REAL:
+                        self.responder_json(200, {"sucesso": False, "mensagem": "Senha de admin incorreta!"})
+                        return
+
+                url = f"{SUPABASE_URL}/auth/v1/signup"
+                
+                # O Supabase tem um campo 'data' feito para guardar dados especificos de cada usuario
+                dados = {
+                    "email": email, 
+                    "password": senha,
+                    "data": {
+                        "nome": nome,
+                        "role": role
+                    }
+                }
+                
+                resposta_supabase = requests.post(url, json=dados, headers=headers)
+                resultado = resposta_supabase.json()
+
+                # Se o e-mail já existir ou a senha for fraca, o Supabase avisa aqui (Status 400 ou 422)
+                if resposta_supabase.status_code != 200:
+                    mensagem_erro = resultado.get("msg", "Erro ao realizar o cadastro.")
+                    self.responder_json(200, {"sucesso": False, "mensagem": mensagem_erro})
+                    return
+
+                self.responder_json(200, {"sucesso": True, "mensagem": "Cadastro realizado com sucesso!"})
+                
         except Exception as e:
             self.responder_json(200, {"sucesso": False, "mensagem": f"Erro no servidor: {str(e)}"})
 
