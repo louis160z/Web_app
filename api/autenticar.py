@@ -35,7 +35,8 @@ class handler(BaseHTTPRequestHandler):
                 # A VERIFICAÇÃO DEFINITIVA: Olha o status da resposta (400 = Erro, 200 = Sucesso)
                 if resposta_supabase.status_code != 200:
                     # Pega a mensagem ('msg') que o Supabase mandou, ou usa uma padrão se não vier
-                    mensagem_erro = resultado.get("msg", "E-mail ou senha incorretos.")
+                    mensagem_erro = resultado.get("msg", "Ocorreu um erro, tente novamente ou solicite apoio técnico.")
+                    if mensagem_erro == 'Invalid login credentials': mensagem_erro = "E-mail ou senha incorretos."
                     self.responder_json(200, {"sucesso": False, "mensagem": mensagem_erro})
                     return
 
