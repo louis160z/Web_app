@@ -46,7 +46,8 @@ class handler(BaseHTTPRequestHandler):
                 })
 
         except Exception as e:
-            self.responder_json(200, {"sucesso": False, "mensagem": "Erro interno no servidor."})
+            # Isso vai mandar o erro técnico exato do Python para o pop-up do site
+            self.responder_json(200, {"sucesso": False, "mensagem": f"Erro técnico: {str(e)}"})
 
     # Função auxiliar para não repetir código
     def responder_json(self, status, dicionario):
