@@ -33,12 +33,17 @@ class handler(BaseHTTPRequestHandler):
                 resposta_supabase = requests.post(url, json=dados, headers=headers)
                 resultado = resposta_supabase.json()
 
-                # O Supabase retorna "error" se a senha estiver errada
-                if "error" in resultado:
-                    self.responder_json(200, {"sucesso": False, "mensagem": resultado.get("error_description", "Credenciais inválidas.")})
+                # --- NOVO BLOCO DE DEBUG (O Interrogatório) ---
+                if "access_token" not in resultado:
+                    # Se não veio o token, vamos jogar a resposta nua e crua na tela do site!
+                    self.responder_json(200, {
+                        "sucesso": False, 
+                        "mensagem": f"Resposta do Supabase: {resultado} | URL tentada: {url}"
+                    })
                     return
+                # ----------------------------------------------
 
-                # Se deu certo, devolvemos o Token de Acesso para o JS
+                # Se chegou aqui, o token existe e deu tudo certo
                 self.responder_json(200, {
                     "sucesso": True, 
                     "access_token": resultado["access_token"],
