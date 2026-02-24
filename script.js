@@ -287,9 +287,14 @@ async function fazerLogin() {
     let resultado_auth, resultado_n8n; //varivel para armazenar o resultado retornado pela API de auth
     const email = document.getElementById('login-email').value;
     const senha = document.getElementById('login-senha').value;
+    const dominio_obrigatorio = '@inframerica.aero';
 
     if (!email || !senha) {
         alert("Preencha todos os campos.");
+        return;
+    }
+    if (!email.endsWith(dominioObrigatorio)){
+        alert("Apenas e-mails da Inframerica são aceitos");
         return;
     }
 
