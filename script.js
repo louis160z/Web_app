@@ -318,7 +318,7 @@ async function fazerLogin() {
     localStorage.setItem('munck_user_id', resultado_auth.usuario.id);
     
     //Por enquanto sem nome e role indefinida, solicitação para o N8N posteriormente para obter essas informações
-    currentUser = { role: resultado_n8n.role, nome: resultado_n8n.nome, email: email }; 
+    currentUser = { role: resultado_auth.role, nome: resultado_auth.nome, email: email }; 
     listaGlobalReservas = resultado_n8n.array_calendar;
     
     document.getElementById('login-section').classList.add('hidden');
@@ -381,16 +381,16 @@ async function fazerCadastro() {
     }
     
     switch(resultado.sucesso){
-      case true:
-            alert("Cadastro realizado com sucesso! Agora você pode fazer login.");
+      case True:
+            alert(resultado.mensagem);
             if (role === 'manager') alternarTelas('register-manager-section', 'login-section');
             if (role === 'user') alternarTelas('register-section', 'login-section');
             break;
-      case false:
+      case False:
             alert(resultado.mensagem);
             break;
       default:
-            alert("Houve um erro inesperado, tente novamente.");
+            alert(resultado.mensagem || "Houve um erro inesperado, tente novamente.");
             break;
     }
 }
