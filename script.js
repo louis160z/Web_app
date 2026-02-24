@@ -9,7 +9,6 @@ const COR_NEGADO = '#cf0a0a';
 const COR_APROVADO = '#11f018';
 const PATH_AUTENTICACAO = '/api/autenticar';
 const PATH_SOLICITACOES = '/api/enviar_solicitacoes';
-const DOMINIO_OBRIGATORIO = '@inframerica.aero';
 let currentUser = null;
 let listaGlobalReservas = [];
 
@@ -362,10 +361,7 @@ async function fazerCadastro() {
         alert("Por favor, preencha todos os campos.");
         return;
     }
-    if (!email.endsWith(DOMINIO_OBRIGATORIO)){
-            alert("Apenas e-mails da Inframerica são aceitos");
-            return;
-    }
+
     const payload = {
         action: 'cadastro',
         nome: nome,
