@@ -67,7 +67,16 @@ class handler(BaseHTTPRequestHandler):
             elif acao == 'cadastro':
                 nome = payload.get('nome')
                 role = payload.get('role')
-
+                DOMINIO_OBRIGATORIO = "@gmail.com"
+                
+                # Se o e-mail NÃO terminar com o domínio obrigatório, barramos na hora!
+                if not email.endswith(DOMINIO_OBRIGATORIO):
+                    self.responder_json(200, {
+                        "sucesso": False, 
+                        "mensagem": "Acesso negado: Apenas e-mails corporativos são autorizados."
+                    })
+                    return
+                
                 if role == 'manager':
                     senha_digitada = payload.get('senha_digitada')
                     if senha_digitada != SENHA_ADMIN_REAL:
