@@ -374,11 +374,6 @@ async function fazerCadastro() {
       return; //Apenas para não executar as próximas linhas de código
     }
     
-    try {
-      resultado = await postN8N(payload, PATH_AUTENTICACAO);
-    } catch(error) {
-      return; //Apenas para não executar as próximas linhas de código
-    }
     
     switch(resultado.sucesso){
       case True:
