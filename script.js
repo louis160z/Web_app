@@ -374,9 +374,25 @@ async function fazerCadastro() {
       return; //Apenas para não executar as próximas linhas de código
     }
     
-    alert("Cadastro realizado com sucesso! Agora você pode fazer login.");
-    if (role === 'manager') alternarTelas('register-manager-section', 'login-section');
-    if (role === 'user') alternarTelas('register-section', 'login-section');
+    try {
+      resultado = await postN8N(payload, PATH_AUTENTICACAO);
+    } catch(error) {
+      return; //Apenas para não executar as próximas linhas de código
+    }
+    
+    switch(resultado.sucesso){
+      case true:
+            alert("Cadastro realizado com sucesso! Agora você pode fazer login.");
+            if (role === 'manager') alternarTelas('register-manager-section', 'login-section');
+            if (role === 'user') alternarTelas('register-section', 'login-section');
+            break;
+      case false:
+            alert(resultado.mensagem);
+            break;
+      default:
+            alert("Houve um erro inesperado, tente novamente.");
+            break;
+    }
 }
 
 //----------------------------------------------------------------------------------------------------------
