@@ -376,12 +376,12 @@ async function fazerCadastro() {
     
     
     switch(resultado.sucesso){
-      case True:
+      case true:
             alert(resultado.mensagem);
             if (role === 'manager') alternarTelas('register-manager-section', 'login-section');
             if (role === 'user') alternarTelas('register-section', 'login-section');
             break;
-      case False:
+      case false:
             alert(resultado.mensagem);
             break;
       default:
