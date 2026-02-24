@@ -344,11 +344,6 @@ async function fazerCadastro() {
     //Checa se está na tela de registro de um manager
     const tela_reg_man = !document.getElementById('register-manager-section').classList.contains('hidden');
     let nome, senha, email, role, resultado, senha_admin;
-
-    if (!email.endsWith(DOMINIO_OBRIGATORIO)){
-            alert("Apenas e-mails da Inframerica são aceitos");
-            return;
-    }
   
     if(tela_reg_man) {
         senha_admin = document.getElementById('manager-password').value;
@@ -367,7 +362,10 @@ async function fazerCadastro() {
         alert("Por favor, preencha todos os campos.");
         return;
     }
-
+    if (!email.endsWith(DOMINIO_OBRIGATORIO)){
+            alert("Apenas e-mails da Inframerica são aceitos");
+            return;
+    }
     const payload = {
         action: 'cadastro',
         nome: nome,
