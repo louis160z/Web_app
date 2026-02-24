@@ -301,7 +301,7 @@ async function fazerLogin() {
 
         if (resultado_auth.sucesso === false) {
             // Mostra o erro exato que o Supabase enviou (ex: "Invalid login credentials")
-            alert(resultado.mensagem);
+            alert(resultado_auth.mensagem);
             return;
         }
     } catch(error) {
@@ -318,7 +318,11 @@ async function fazerLogin() {
     localStorage.setItem('munck_user_id', resultado_auth.usuario.id);
     
     //Por enquanto sem nome e role indefinida, solicitação para o N8N posteriormente para obter essas informações
-    currentUser = { role: resultado_auth.data.role, nome: resultado_auth.data.nome, email: email }; 
+    currentUser = { 
+      role: resultado_auth.usuario.user_metadata.role, 
+      nome: resultado_auth.usuario.user_metadata.nome, 
+      email: email
+    }; 
     listaGlobalReservas = resultado_n8n.array_calendar;
     
     document.getElementById('login-section').classList.add('hidden');
