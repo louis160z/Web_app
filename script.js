@@ -9,6 +9,7 @@ const COR_NEGADO = '#cf0a0a';
 const COR_APROVADO = '#11f018';
 const PATH_AUTENTICACAO = '/api/autenticar';
 const PATH_SOLICITACOES = '/api/enviar_solicitacoes';
+const DOMINIO_OBRIGATORIO = '@inframerica.aero';
 let currentUser = null;
 let listaGlobalReservas = [];
 
@@ -103,7 +104,7 @@ function stringBaseCard(pedido) {
 //----------------------------------------------------------------------------------------------------------
 
 //Função para solicitar serviço ao N8N, já criando mensagens de erros, sem precisar criá-las fora da função
-async function postN8N(payload, path = PATH_SOLICITACOES){
+async function enviarParaAPI(payload, path = PATH_SOLICITACOES){
   let response;
     try{
         response = await fetch(path, {
@@ -287,14 +288,9 @@ async function fazerLogin() {
     let resultado_auth, resultado_n8n; //varivel para armazenar o resultado retornado pela API de auth
     const email = document.getElementById('login-email').value;
     const senha = document.getElementById('login-senha').value;
-    const dominio_obrigatorio = '@inframerica.aero';
 
     if (!email || !senha) {
         alert("Preencha todos os campos.");
-        return;
-    }
-    if (!email.endsWith(dominioObrigatorio)){
-        alert("Apenas e-mails da Inframerica são aceitos");
         return;
     }
 
@@ -302,7 +298,7 @@ async function fazerLogin() {
     const payload_n8n = {action: 'carregar_dados', email: email};
     
     try {
-        resultado_auth = await postN8N(payload_auth, PATH_AUTENTICACAO);
+        resultado_auth = await enviarParaAPI(payload_auth, PATH_AUTENTICACAO);
 
         if (resultado_auth.sucesso === false) {
             // Mostra o erro exato que o Supabase enviou (ex: "Invalid login credentials")
@@ -314,7 +310,7 @@ async function fazerLogin() {
     }
     
     try {
-      resultado_n8n = await postN8N(payload_n8n);
+      resultado_n8n = await enviarParaAPI(payload_n8n);
     } catch(error) {
       return; //Apenas para não realizar as linhas abaixo
     }
@@ -348,7 +344,12 @@ async function fazerCadastro() {
     //Checa se está na tela de registro de um manager
     const tela_reg_man = !document.getElementById('register-manager-section').classList.contains('hidden');
     let nome, senha, email, role, resultado, senha_admin;
-    
+
+    if (!email.endsWith(DOMINIO_OBRIGATORIO)){
+            alert("Apenas e-mails da Inframerica são aceitos");
+            return;
+    }
+  
     if(tela_reg_man) {
         senha_admin = document.getElementById('manager-password').value;
         nome = document.getElementById('reg-man-nome').value;
@@ -378,7 +379,7 @@ async function fazerCadastro() {
     if(tela_reg_man) payload.senha_digitada = senha_admin; //Adiciona a senha digitada pelo usuario ao payload
     
     try {
-      resultado = await postN8N(payload, PATH_AUTENTICACAO);
+      resultado = await enviarParaAPI(payload, PATH_AUTENTICACAO);
     } catch(error) {
       return; //Apenas para não executar as próximas linhas de código
     }
@@ -429,7 +430,7 @@ async function solicitarAgendamento() {
     }
     
     try {
-      resultado = await postN8N(payload);
+      resultado = await enviarParaAPI(payload);
     } catch(error) {
       return; //Apenas para não executar as próximas linhas de código
     }
@@ -452,7 +453,7 @@ async function deletarPedido(idPedido){
         const payload = {action: 'deletar_pedido', id: idPedido};
         
         try {
-          resultado = await postN8N(payload); // Solicitando serviços ao N8N
+          resultado = await enviarParaAPI(payload); // Solicitando serviços ao N8N
         } catch(error) {
           return; //Apenas para não executar as próximas linhas de código
         }
@@ -493,7 +494,7 @@ async function decidirPedido(idPedido, acao) {
         const payload = { action: 'decisao_gestor', id: idPedido, status: acao };
         
         try {
-          resultado = await postN8N(payload); // Solicitando serviços ao N8N
+          resultado = await enviarParaAPI(payload); // Solicitando serviços ao N8N
         } catch(error) {
           return; //Apenas para não executar as próximas linhas de código
         }
