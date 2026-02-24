@@ -318,7 +318,7 @@ async function fazerLogin() {
     localStorage.setItem('munck_user_id', resultado_auth.usuario.id);
     
     //Por enquanto sem nome e role indefinida, solicitação para o N8N posteriormente para obter essas informações
-    currentUser = { role: resultado_auth.role, nome: resultado_auth.nome, email: email }; 
+    currentUser = { role: resultado_auth.data.role, nome: resultado_auth.data.nome, email: email }; 
     listaGlobalReservas = resultado_n8n.array_calendar;
     
     document.getElementById('login-section').classList.add('hidden');
