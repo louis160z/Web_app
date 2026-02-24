@@ -7,7 +7,7 @@ import json
 TRADUCOES_SUPABASE = {
     "Invalid login credentials": "E-mail ou senha incorretos.",
     "User already registered": "Este e-mail já está cadastrado no sistema.",
-    "Password should be at least 6 characters": "A senha é muito curta. Use pelo menos 6 caracteres.",
+    "Password should be at least 6 characters.": "A senha é muito curta. Use pelo menos 6 caracteres.",
     "Email not confirmed": "Por favor, confirme seu e-mail antes de entrar.",
     "Signup requires a valid password": "É necessário digitar uma senha válida."
 }
