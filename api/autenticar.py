@@ -4,6 +4,14 @@ import os
 import requests
 import json
 
+TRADUCOES_SUPABASE = {
+    "Invalid login credentials": "E-mail ou senha incorretos.",
+    "User already registered": "Este e-mail já está cadastrado no sistema.",
+    "Password should be at least 6 characters": "A senha é muito curta. Use pelo menos 6 caracteres.",
+    "Email not confirmed": "Por favor, confirme seu e-mail antes de entrar.",
+    "Signup requires a valid password": "É necessário digitar uma senha válida."
+}
+
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
@@ -39,9 +47,9 @@ class handler(BaseHTTPRequestHandler):
                 # A VERIFICAÇÃO DEFINITIVA: Olha o status da resposta (400 = Erro, 200 = Sucesso)
                 if resposta_supabase.status_code != 200:
                     # Pega a mensagem ('msg') que o Supabase mandou, ou usa uma padrão se não vier
-                    mensagem_erro = resultado.get("msg", "Ocorreu um erro, tente novamente ou solicite apoio técnico.")
-                    if mensagem_erro == 'Invalid login credentials': mensagem_erro = "E-mail ou senha incorretos."
-                    self.responder_json(200, {"sucesso": False, "mensagem": mensagem_erro})
+                    erro_ingles = resultado.get("msg", "Ocorreu um erro, tente novamente ou solicite apoio técnico.")
+                    erro_traduzido = TRADUCOES_SUPABASE.get(erro_ingles, erro_ingles)
+                    self.responder_json(200, {"sucesso": False, "mensagem": erro_traduzido})
                     return
 
                 # Se passou do if acima, o status foi 200 OK. O token com certeza existe!
@@ -83,8 +91,9 @@ class handler(BaseHTTPRequestHandler):
 
                 # Se o e-mail já existir ou a senha for fraca, o Supabase avisa aqui (Status 400 ou 422)
                 if resposta_supabase.status_code != 200:
-                    mensagem_erro = resultado.get("msg", "Erro ao realizar o cadastro.")
-                    self.responder_json(200, {"sucesso": False, "mensagem": mensagem_erro})
+                    erro_ingles = resultado.get("msg", "Erro ao realizar o cadastro.")
+                    erro_traduzido = TRADUCOES_SUPABASE.get(erro_ingles, erro_ingles)
+                    self.responder_json(200, {"sucesso": False, "mensagem": erro_traduzido})
                     return
 
                 self.responder_json(200, {"sucesso": True, "mensagem": "Cadastro realizado com sucesso!"})
