@@ -67,7 +67,7 @@ class handler(BaseHTTPRequestHandler):
             elif acao == 'cadastro':
                 nome = payload.get('nome')
                 role = payload.get('role')
-                DOMINIO_OBRIGATORIO = "@gmail.com"
+                DOMINIO_OBRIGATORIO = "@inframerica.aero"
                 
                 # Se o e-mail NÃO terminar com o domínio obrigatório, barramos na hora!
                 if not email.endswith(DOMINIO_OBRIGATORIO):
