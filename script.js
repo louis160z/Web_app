@@ -326,6 +326,8 @@ async function fazerLogin() {
     listaGlobalReservas = resultado_n8n.array_calendar;
     
     document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('reg-section').classList.add('hidden');
+    document.getElementById('reg-man-section').classList.add('hidden');
     document.getElementById('user-section').classList.remove('hidden');
 
     if (currentUser.role === 'manager') {
