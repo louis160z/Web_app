@@ -351,6 +351,7 @@ function fazerLogout() {
     // 3. Troca as telas: Esconde as áreas restritas e mostra o login
     document.getElementById('user-section').classList.add('hidden');
     document.getElementById('manager-section').classList.add('hidden'); // Garante que o painel do gestor também feche
+    document.getElementById('calendar-container').classList.add('hidden');
     
     document.getElementById('login-section').classList.remove('hidden');
 
