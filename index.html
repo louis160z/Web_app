@@ -61,6 +61,17 @@
                 </div>                
 
                 <div id="user-section" class="hidden mt-4">
+                    <div class="flex gap-4 mb-6">
+    
+                        <button onclick="atualizarReservas()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
+                            🔄 Atualizar Dados
+                        </button>
+                    
+                        <button onclick="fazerLogout()" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition">
+                            🚪 Sair do Sistema
+                        </button>
+                    
+                    </div>
                     <h2 class="text-lg flex justify-between items-center font-bold mb-4 text-blue-600 border-b pb-2">
                         Nova Reserva
                         <button onclick="alternarTelas('user-section','minhas-reservas-section'); carregarReservasUsuario()" 
