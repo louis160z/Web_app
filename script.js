@@ -338,6 +338,29 @@ async function fazerLogin() {
 
 //----------------------------------------------------------------------------------------------------------
 
+//Função para logout
+function fazerLogout() {
+    // 1. Destrói as chaves de acesso no navegador (Segurança em 1º lugar)
+    localStorage.removeItem('munck_token');
+    localStorage.removeItem('munck_user_id');
+
+    // 2. Limpa a memória temporária do sistema
+    currentUser = null;
+    listaGlobalReservas = [];
+
+    // 3. Troca as telas: Esconde as áreas restritas e mostra o login
+    document.getElementById('user-section').classList.add('hidden');
+    document.getElementById('manager-section').classList.add('hidden'); // Garante que o painel do gestor também feche
+    
+    document.getElementById('login-section').classList.remove('hidden');
+
+    // 4. (Opcional, mas recomendado) Limpa os campos de senha digitados anteriormente
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-senha').value = '';
+}
+
+//----------------------------------------------------------------------------------------------------------
+
 // Função para enviar o cadastro para o n8n
 async function fazerCadastro() {
     //Checa se está na tela de registro de um manager
