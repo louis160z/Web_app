@@ -277,7 +277,105 @@ async function carregarSolicitacoes() {
         listaContainer.appendChild(card);
     });
 }
+//----------------------------------------------------------------------------------------------------------
 
+//Função que evita problemas de segurança, mostrando HTML de tela de minhas reservas apenas APÓS o login
+function mostrarManagerSection() {
+  const managerSection = document.getElementById('manager-section');
+  calendarContainer.innerHTML = `
+    <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-red-500">
+        <h2 class="font-bold text-red-600 mb-4 text-lg flex items-center gap-2">
+            <span>🛡️</span> Painel do Gestor
+        </h2>
+        <div id="lista-pendente" class="text-sm text-gray-600 space-y-2">
+            <p class="italic">Carregando solicitações...</p>
+        </div>
+  `;
+} 
+
+//----------------------------------------------------------------------------------------------------------
+
+//Função que evita problemas de segurança, mostrando HTML de tela de calendario apenas APÓS o login
+function mostrarCalendarContainer() {
+  const calendarContainer = document.getElementById('calendar-container');
+  calendarContainer.innerHTML = `
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-bold mb-4 text-gray-700 flex items-center gap-2">
+            <span>📅</span> Agenda de Reservas
+        </h2>
+        <div id="calendario"></div>
+    </div>
+  `;
+}  
+
+//----------------------------------------------------------------------------------------------------------
+
+//Função que evita problemas de segurança, mostrando HTML de tela de minhas reservas apenas APÓS o login
+function mostrarMinhasReservasSection() {
+  const minhasReservasSection = document.getElementById('minhas-reservas-section');
+  minhasReservasSection.innerHTML = `
+    <h2 class="text-lg flex justify-between items-center font-bold mb-4 text-blue-600 border-b pb-2">
+        Minhas reservas
+        <button onclick="alternarTelas('minhas-reservas-section','user-section')" 
+            class="text-[10px] border border-blue-600 text-blue-600 px-3 py-1 rounded-full font-medium hover:bg-blue-50 transition">
+            Nova reserva
+        </button>
+    </h2>
+    
+    <div id="lista-reservas-usuario" class="text-sm text-gray-600 space-y-2">
+        <p class="italic">Carregando solicitações...</p>
+    </div>
+  `;
+  
+}  
+
+//----------------------------------------------------------------------------------------------------------
+
+//Função que evita problemas de segurança, mostrando HTML de tela do usuário apenas APÓS o login
+function mostrarUserSection() {
+    const userSection = document.getElementById('user-section');
+    userSection.innerHTML = `
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 bg-gray-50 p-3 rounded-lg border border-gray-200 shadow-sm">
+            <div class="flex gap-3 w-full sm:w-auto">
+                <button onclick="atualizarReservas()" class="flex-1 sm:flex-none bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-1.5 px-4 text-sm rounded transition">
+                    🔄 Atualizar
+                </button>
+            
+                <button onclick="fazerLogout()" class="flex-1 sm:flex-none bg-white border border-red-500 text-red-500 hover:bg-red-50 font-semibold py-1.5 px-4 text-sm rounded transition">
+                    🚪 Sair
+                </button>
+            </div>
+        </div>
+        
+        <h2 class="text-lg flex justify-between items-center font-bold mb-4 text-blue-600 border-b pb-2">
+            Nova Reserva
+            <button onclick="alternarTelas('user-section','minhas-reservas-section'); carregarReservasUsuario()" 
+                class="text-[10px] border border-blue-600 text-blue-600 px-3 py-1 rounded-full font-medium hover:bg-blue-50 transition">
+                Minhas reservas
+            </button>
+        </h2>
+        <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">COORDENADOR</h2>
+        <select id="coordenador" class="w-full mb-2 p-2 border rounded text-sm text-gray-800">
+            <option value="" disabled selected hidden>Coordenador responsável</option>
+            <option value="Gabriel Santos Meyer">Gabriel Santos Meyer</option>
+            <option value="Rogério Santos de Oliveira">Rogério Santos de Oliveira</option>
+        </select>
+  
+        <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Solicitantes</h2>
+        <input type="text" id="solicitantes" placeholder="Pessoa 1/Pessoa 2" class="w-full mb-3 p-2 border rounded text-sm">
+        
+        <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Atividade</h2>
+        <textarea id="atividade" placeholder="Detalhamento da atividade..." rows="3" class="w-full mb-3 p-2 border rounded text-sm"></textarea>
+        
+        <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Data inicial</h2>
+        <input type="datetime-local" id="reserva-inicial" class="w-full mb-3 p-2 border rounded text-sm">
+        
+        <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Data final</h2>
+        <input type="datetime-local" id="reserva-final" class="w-full mb-4 p-2 border rounded text-sm">
+        
+        <button onclick="solicitarAgendamento()" class="w-full bg-green-500 text-white p-2 rounded font-bold hover:bg-green-600 transition">Solicitar Reserva</button>
+    `;
+}
 //----------------------------------------------------------------------------------------------------------
 //                                            Funções de cadastro
 //----------------------------------------------------------------------------------------------------------
