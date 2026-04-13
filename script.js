@@ -376,6 +376,28 @@ function mostrarUserSection() {
         <button onclick="solicitarAgendamento()" class="w-full bg-green-500 text-white p-2 rounded font-bold hover:bg-green-600 transition">Solicitar Reserva</button>
     `;
 }
+
+//----------------------------------------------------------------------------------------------------------
+
+//Função para mostrar a tela inicial
+
+function mostrarTelaInicial() {
+    mostrarUserSection();
+    mostrarCalendarContainer();
+    mostrarMinhasReservasSection();
+
+    document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('register-section').classList.add('hidden');
+    document.getElementById('register-manager-section').classList.add('hidden');
+    document.getElementById('user-section').classList.remove('hidden');
+
+    if (currentUser.role === 'manager') {
+        mostrarManagerSection();
+        document.getElementById('manager-section').classList.remove('hidden');
+        carregarSolicitacoes();
+    } 
+}
+
 //----------------------------------------------------------------------------------------------------------
 //                                            Funções de cadastro
 //----------------------------------------------------------------------------------------------------------
@@ -423,15 +445,7 @@ async function fazerLogin() {
     }; 
     listaGlobalReservas = resultado_n8n.array_calendar;
     
-    document.getElementById('login-section').classList.add('hidden');
-    document.getElementById('register-section').classList.add('hidden');
-    document.getElementById('register-manager-section').classList.add('hidden');
-    document.getElementById('user-section').classList.remove('hidden');
-
-    if (currentUser.role === 'manager') {
-        document.getElementById('manager-section').classList.remove('hidden');
-        carregarSolicitacoes();
-    }
+    mostrarTelaInicial();
     //carregarDadosEAgenda();   
     inicializarAgenda(listaGlobalReservas);
 }
