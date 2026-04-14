@@ -1,0 +1,7 @@
+# Ignorar o motor do Tailwind (muito pesado)
+tailwindcss.exe
+
+# Ignorar futuras chaves de segurança
+.env
+
+
