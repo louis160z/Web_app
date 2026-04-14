@@ -466,8 +466,12 @@ function fazerLogout() {
     document.getElementById('user-section').classList.add('hidden');
     document.getElementById('manager-section').classList.add('hidden'); // Garante que o painel do gestor também feche
     document.getElementById('calendar-container').classList.add('hidden');
-    
     document.getElementById('login-section').classList.remove('hidden');
+
+    document.getElementById('user-section') = ``;
+    document.getElementById('manager-section') = ``;
+    document.getElementById('calendar-container') = ``;
+    document.getElementById('minhas-reservas-section') = ``;
 
     // 4. (Opcional, mas recomendado) Limpa os campos de senha digitados anteriormente
     document.getElementById('login-email').value = '';
