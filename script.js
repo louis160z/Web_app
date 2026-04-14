@@ -410,10 +410,21 @@ async function fazerLogin() {
     const email = document.getElementById('login-email').value;
     const senha = document.getElementById('login-senha').value;
 
+    //Elementos da tela
+    const btnLogin = document.getElementById('btn-login');
+    const textoBtn = document.getElementById('texto-btn-login');
+    const iconeBtn = document.getElementById('icone-btn-login');
+
     if (!email || !senha) {
         alert("Preencha todos os campos.");
         return;
     }
+
+    //Ativa modo carregando
+    btnLogin.disabled = true; // Impede novos cliques no HTML
+    btnLogin.classList.add('opacity-70', 'cursor-not-allowed'); // Deixa o botão "apagado" e muda o mouse
+    textoBtn.classList.add('hidden'); // Esconde a palavra "Entrar"
+    iconeBtn.classList.remove('hidden'); // Mostra a rodinha girando
 
     const payload_auth = { action: 'login', email: email, senha: senha };
     const payload_n8n = {action: 'carregar_dados', email: email};
@@ -422,12 +433,20 @@ async function fazerLogin() {
         resultado_auth = await enviarParaAPI(payload_auth, PATH_AUTENTICACAO);
 
         if (resultado_auth.sucesso === false) {
-            // Mostra o erro exato que o Supabase enviou (ex: "Invalid login credentials")
+            // Mostra o erro traduzido que o Supabase enviou
             alert(resultado_auth.mensagem);
             return;
         }
     } catch(error) {
         return; //Apenas para não realizar as linhas abaixo
+    } finally {
+        //Desativa modo carregando
+        //Isso roda obrigatoriamente no final, dando erro ou sucesso
+        btnLogin.disabled = false; 
+        btnLogin.classList.remove('opacity-70', 'cursor-not-allowed'); 
+        textoBtn.classList.remove('hidden'); 
+        iconeBtn.classList.add('hidden'); 
+    }
     }
     // SALVANDO A CHAVE MESTRA DO USUÁRIO NO NAVEGADOR
     localStorage.setItem('munck_token', resultado_auth.access_token);

@@ -1,4 +1,4 @@
-# Ignorar o motor do Tailwind (muito pesado)
+# Ignorar o executável do tailwind que gerou o output.css
 tailwindcss.exe
 
 # Ignorar futuras chaves de segurança
