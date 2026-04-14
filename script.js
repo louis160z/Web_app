@@ -447,7 +447,7 @@ async function fazerLogin() {
         textoBtn.classList.remove('hidden'); 
         iconeBtn.classList.add('hidden'); 
     }
-    }
+
     // SALVANDO A CHAVE MESTRA DO USUÁRIO NO NAVEGADOR
     localStorage.setItem('munck_token', resultado_auth.access_token);
     localStorage.setItem('munck_user_id', resultado_auth.usuario.id);
