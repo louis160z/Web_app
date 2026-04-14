@@ -427,26 +427,25 @@ async function fazerLogin() {
     } catch(error) {
         return; //Apenas para não realizar as linhas abaixo
     }
-    
+    // SALVANDO A CHAVE MESTRA DO USUÁRIO NO NAVEGADOR
+    localStorage.setItem('munck_token', resultado_auth.access_token);
+    localStorage.setItem('munck_user_id', resultado_auth.usuario.id);
+
+    currentUser = { 
+      role: resultado_auth.usuario.user_metadata.role, 
+      nome: resultado_auth.usuario.user_metadata.nome, 
+      email: email
+    };
+
+    mostrarTelaInicial(); //Mostra a tela inicial, por enquanto sem agenda carregada
+
     try {
       resultado_n8n = await enviarParaAPI(payload_n8n);
     } catch(error) {
       return; //Apenas para não realizar as linhas abaixo
     }
-    // SALVANDO A CHAVE MESTRA DO USUÁRIO NO NAVEGADOR
-    localStorage.setItem('munck_token', resultado_auth.access_token);
-    localStorage.setItem('munck_user_id', resultado_auth.usuario.id);
-    
-    //Por enquanto sem nome e role indefinida, solicitação para o N8N posteriormente para obter essas informações
-    currentUser = { 
-      role: resultado_auth.usuario.user_metadata.role, 
-      nome: resultado_auth.usuario.user_metadata.nome, 
-      email: email
-    }; 
+ 
     listaGlobalReservas = resultado_n8n.array_calendar;
-    
-    mostrarTelaInicial();
-    //carregarDadosEAgenda();   
     inicializarAgenda(listaGlobalReservas);
 }
 
