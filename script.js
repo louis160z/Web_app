@@ -282,7 +282,7 @@ async function carregarSolicitacoes() {
 //Função que evita problemas de segurança, mostrando HTML de tela de minhas reservas apenas APÓS o login
 function mostrarManagerSection() {
   const managerSection = document.getElementById('manager-section');
-  calendarContainer.innerHTML = `
+  managerSection.innerHTML = `
     <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-red-500">
         <h2 class="font-bold text-red-600 mb-4 text-lg flex items-center gap-2">
             <span>🛡️</span> Painel do Gestor
