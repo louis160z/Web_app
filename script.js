@@ -132,7 +132,7 @@ async function enviarParaAPI(payload, path = PATH_SOLICITACOES){
 //Função para carregar agenda
 function inicializarAgenda(reservas) {
     
-    // Mostra o container do calendário
+    // Mostra o container do calendário (redundância)
     document.getElementById('calendar-container').classList.remove('hidden');
 
     const calendarEl = document.getElementById('calendario');
@@ -390,6 +390,8 @@ function mostrarTelaInicial() {
     document.getElementById('register-section').classList.add('hidden');
     document.getElementById('register-manager-section').classList.add('hidden');
     document.getElementById('user-section').classList.remove('hidden');
+    document.getElementById('calendar-container').classList.remove('hidden');
+
 
     if (currentUser.role === 'manager') {
         mostrarManagerSection();
@@ -446,7 +448,7 @@ async function fazerLogin() {
     }
  
     listaGlobalReservas = resultado_n8n.array_calendar;
-    inicializarAgenda(listaGlobalReservas);
+    atualizarReservas();
 }
 
 //----------------------------------------------------------------------------------------------------------
