@@ -468,10 +468,10 @@ function fazerLogout() {
     document.getElementById('calendar-container').classList.add('hidden');
     document.getElementById('login-section').classList.remove('hidden');
 
-    document.getElementById('user-section') = ``;
-    document.getElementById('manager-section') = ``;
-    document.getElementById('calendar-container') = ``;
-    document.getElementById('minhas-reservas-section') = ``;
+    document.getElementById('user-section').innerHTML = ``;
+    document.getElementById('manager-section').innerHTML = ``;
+    document.getElementById('calendar-container').innerHTML = ``;
+    document.getElementById('minhas-reservas-section').innerHTML = ``;
 
     // 4. (Opcional, mas recomendado) Limpa os campos de senha digitados anteriormente
     document.getElementById('login-email').value = '';
