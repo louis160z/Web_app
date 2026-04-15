@@ -507,14 +507,14 @@ async function fazerCadastro() {
         nome = document.getElementById('reg-man-nome').value;
         email = document.getElementById('reg-man-email').value;
         senha = document.getElementById('reg-man-senha').value;
-        btnReg = document.getElementById('btn-reg');
+        btnReg = document.getElementById('btn-reg-man');
         role = 'manager';
     }
     else {
         nome = document.getElementById('reg-nome').value;
         email = document.getElementById('reg-email').value;
         senha = document.getElementById('reg-senha').value;
-        btnReg = document.getElementById('btn-reg-man');
+        btnReg = document.getElementById('btn-reg');
         role = 'user';
     }
     if (!nome || !email || !senha) {
