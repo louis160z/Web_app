@@ -21,12 +21,16 @@
             <div class="bg-white p-6 rounded-lg shadow-lg">
                 <div id="login-section" class="text-center">
                     <h2 class="font-bold mb-4 text-gray-700">Acesso</h2>
+
+                    <form id="form-login">
                     <input type="email" id="login-email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded text-sm text-center">
                     <input type="password" id="login-senha" placeholder="Senha" class="w-full mb-4 p-2 border rounded text-sm text-center">
-                    
+                    </form>
+
                     <button id="btn-login" onclick="fazerLogin()" class="w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded transition font-bold mb-4">
                         Entrar
                     </button>
+
                     <p class="text-xs text-gray-500">Não tem conta? 
                         <a href="javascript:void(0)" onclick="alternarTelas('login-section', 'register-section')" class="text-blue-600 hover:underline">Cadastre-se aqui</a>
                     </p>
@@ -37,10 +41,13 @@
             
                 <div id="register-section" class="hidden text-center">
                     <h2 class="font-bold mb-4 text-gray-700">Novo Cadastro</h2>
+
+                    <form id="form-reg">
                     <input type="text" id="reg-nome" placeholder="Nome Completo" class="w-full mb-2 p-2 border rounded text-sm text-center">
                     <input type="email" id="reg-email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded text-sm text-center">
                     <input type="password" id="reg-senha" placeholder="Crie uma Senha" class="w-full mb-4 p-2 border rounded text-sm text-center">
-                    
+                    </form>
+
                     <button id="btn-reg" onclick="fazerCadastro()" class="w-full bg-orange-500 text-white p-2 rounded hover:bg-orange-600 transition font-bold mb-4">
                         Finalizar Cadastro
                     </button>
@@ -52,11 +59,14 @@
 
                 <div id="register-manager-section" class="hidden text-center">
                     <h2 class="font-bold mb-4 text-gray-700">Novo Cadastro</h2>
+                    
+                    <form id="form-reg-man">
                     <input type="text" id="reg-man-nome" placeholder="Nome Completo" class="w-full mb-2 p-2 border rounded text-sm text-center">
                     <input type="email" id="reg-man-email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded text-sm text-center">
                     <input type="password" id="reg-man-senha" placeholder="Crie uma Senha" class="w-full mb-4 p-2 border rounded text-sm text-center">
                     <input type="password" id="manager-password" placeholder="Insira a senha de coordenador" class="w-full mb-4 p-2 border rounded text-sm text-center">
-                    
+                    </form>
+
                     <button id="btn-reg-man" onclick="fazerCadastro()" class="w-full bg-orange-500 text-white p-2 rounded hover:bg-orange-600 transition font-bold mb-4">
                         Finalizar Cadastro
                     </button>

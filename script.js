@@ -429,6 +429,7 @@ async function fazerLogin() {
             alert(resultado_auth.mensagem);
             return;
         }
+        document.getElementById('form-login').reset(); //Reseta as entradas após sucesso do login
     } catch(error) {
         return; //Apenas para não realizar as linhas abaixo
     } finally {
@@ -535,11 +536,12 @@ async function fazerCadastro() {
     
     try {
       resultado = await enviarParaAPI(payload, PATH_AUTENTICACAO);
+      document.getElementById('form-reg').reset(); //Reseta as entradas após sucesso do cadastro
+      document.getElementById('form-reg-man').reset();
     } catch(error) {
       return; //Apenas para não executar as próximas linhas de código
     } finally {
-        //Destrava o botão
-        //Sempre será realizado
+        //Destrava o botão, sempre será realizado
         btnReg.disabled = false; 
         btnReg.classList.remove('opacity-50', 'cursor-not-allowed'); 
         btnReg.innerText = textoOriginal;
