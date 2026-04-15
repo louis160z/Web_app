@@ -500,7 +500,7 @@ function fazerLogout() {
 async function fazerCadastro() {
     //Checa se está na tela de registro de um manager
     const tela_reg_man = !document.getElementById('register-manager-section').classList.contains('hidden');
-    let nome, senha, email, role, resultado, senha_admin, btnReg;
+    let nome, senha, email, role, resultado, senha_admin, btnReg, teste1;
   
     if(tela_reg_man) {
         senha_admin = document.getElementById('manager-password').value;
@@ -508,6 +508,7 @@ async function fazerCadastro() {
         email = document.getElementById('reg-man-email').value;
         senha = document.getElementById('reg-man-senha').value;
         btnReg = document.getElementById('btn-reg');
+        teste1 = btnReg.innerHTML;
         role = 'manager';
     }
     else {
@@ -515,6 +516,7 @@ async function fazerCadastro() {
         email = document.getElementById('reg-email').value;
         senha = document.getElementById('reg-senha').value;
         btnReg = document.getElementById('btn-reg-man');
+        teste1 = btnReg.innerHTML;
         role = 'user';
     }
     if (!nome || !email || !senha) {
@@ -546,7 +548,7 @@ async function fazerCadastro() {
         //Sempre será realizado
         btnReg.disabled = false; 
         btnReg.classList.remove('opacity-50', 'cursor-not-allowed'); 
-        btnReg.innerText = "Fazer Cadastro";
+        btnReg.innerText = teste1;
     }
     
     
