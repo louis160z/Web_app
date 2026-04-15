@@ -410,21 +410,18 @@ async function fazerLogin() {
     const email = document.getElementById('login-email').value;
     const senha = document.getElementById('login-senha').value;
 
-    //Elementos da tela
     const btnLogin = document.getElementById('btn-login');
-    const textoBtn = document.getElementById('texto-btn-login');
-    const iconeBtn = document.getElementById('icone-btn-login');
+    const textoOriginal = btnLogin.innerText; // Salva a palavra "Entrar"
 
     if (!email || !senha) {
         alert("Preencha todos os campos.");
         return;
     }
 
-    //Ativa modo carregando
-    btnLogin.disabled = true; // Impede novos cliques no HTML
-    btnLogin.classList.add('opacity-70', 'cursor-not-allowed'); // Deixa o botão "apagado" e muda o mouse
-    textoBtn.classList.add('hidden'); // Esconde a palavra "Entrar"
-    iconeBtn.classList.remove('hidden'); // Mostra a rodinha girando
+    //Trava o botão e muda o visual
+    btnLogin.disabled = true; 
+    btnLogin.classList.add('opacity-50', 'cursor-not-allowed'); 
+    btnLogin.innerText = "Aguarde..."; // Dá o feedback para o usuário
 
     const payload_auth = { action: 'login', email: email, senha: senha };
     const payload_n8n = {action: 'carregar_dados', email: email};
@@ -440,12 +437,11 @@ async function fazerLogin() {
     } catch(error) {
         return; //Apenas para não realizar as linhas abaixo
     } finally {
-        //Desativa modo carregando
+        //Destrava o botão
         //Isso roda obrigatoriamente no final, dando erro ou sucesso
         btnLogin.disabled = false; 
-        btnLogin.classList.remove('opacity-70', 'cursor-not-allowed'); 
-        textoBtn.classList.remove('hidden'); 
-        iconeBtn.classList.add('hidden'); 
+        btnLogin.classList.remove('opacity-50', 'cursor-not-allowed'); 
+        btnLogin.innerText = textoOriginal; // Devolve a palavra "Entrar 
     }
 
     // SALVANDO A CHAVE MESTRA DO USUÁRIO NO NAVEGADOR
