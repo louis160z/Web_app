@@ -150,20 +150,15 @@ function inicializarAgenda(reservas) {
             const id = arg.event.id || "00";
             const titulo = arg.event.title;
             const corStatus = arg.event.backgroundColor;
-            const atividade = arg.event.extendedProps.atividade;
 
             // Estrutura: [Bolinha] [ID] [Título]
-            let arrayOfDomNodes = [
-                document.createRange().createContextualFragment(
-                    `<div class="flex items-center gap-1 overflow-hidden">
+            return { 
+                html: `<div class="flex items-center gap-1 overflow-hidden">
                         <span style="background-color: ${corStatus};" class="w-2 h-2 rounded-full flex-shrink-0"></span>
                         <b class="text-[10px] text-gray-700">#${id}</b>
                         <span class="truncate text-[10px]">${titulo}</span>
-                    </div>`
-                )
-            ];
-            
-            return { domNodes: arrayOfDomNodes };
+                    </div>` 
+            };
         },
         eventClick: function(info) {
             const idPedido = info.event.id || "Indefinido";
