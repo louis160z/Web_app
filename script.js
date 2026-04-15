@@ -132,6 +132,12 @@ async function enviarParaAPI(payload, path = PATH_SOLICITACOES){
 //Função para carregar agenda
 function inicializarAgenda(reservas) {
     
+    if (typeof FullCalendar === 'undefined') {
+        console.warn("Aguardando o FullCalendar terminar de baixar...");
+        setTimeout(() => inicializarAgenda(reservas), 100);
+        return; // Para a execução aqui e espera a próxima tentativa
+    }
+    
     // Mostra o container do calendário (redundância)
     document.getElementById('calendar-container').classList.remove('hidden');
 
