@@ -42,7 +42,9 @@
                     <input type="email" id="reg-email" placeholder="E-mail" class="w-full mb-2 p-2 border rounded text-sm text-center">
                     <input type="password" id="reg-senha" placeholder="Crie uma Senha" class="w-full mb-4 p-2 border rounded text-sm text-center">
                     
-                    <button onclick="fazerCadastro()" class="w-full bg-orange-500 text-white p-2 rounded hover:bg-orange-600 transition font-bold mb-4">Finalizar Cadastro</button>
+                    <button id="btn-reg" onclick="fazerCadastro()" class="w-full bg-orange-500 text-white p-2 rounded hover:bg-orange-600 transition font-bold mb-4">
+                        Finalizar Cadastro
+                    </button>
                     
                     <p class="text-xs text-gray-500">Já tem conta? 
                         <a href="javascript:void(0)" onclick="alternarTelas('register-section', 'login-section')" class="text-blue-600 hover:underline">Voltar ao Login</a>
@@ -56,7 +58,9 @@
                     <input type="password" id="reg-man-senha" placeholder="Crie uma Senha" class="w-full mb-4 p-2 border rounded text-sm text-center">
                     <input type="password" id="manager-password" placeholder="Insira a senha de coordenador" class="w-full mb-4 p-2 border rounded text-sm text-center">
                     
-                    <button onclick="fazerCadastro()" class="w-full bg-orange-500 text-white p-2 rounded hover:bg-orange-600 transition font-bold mb-4">Finalizar Cadastro</button>
+                    <button id="btn-reg-man" onclick="fazerCadastro()" class="w-full bg-orange-500 text-white p-2 rounded hover:bg-orange-600 transition font-bold mb-4">
+                        Finalizar Cadastro
+                    </button>
                     
                     <p class="text-xs text-gray-500">Já tem conta? 
                         <a href="javascript:void(0)" onclick="alternarTelas('register-manager-section', 'login-section')" class="text-blue-600 hover:underline">Voltar ao Login</a>

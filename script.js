@@ -500,25 +500,32 @@ function fazerLogout() {
 async function fazerCadastro() {
     //Checa se está na tela de registro de um manager
     const tela_reg_man = !document.getElementById('register-manager-section').classList.contains('hidden');
-    let nome, senha, email, role, resultado, senha_admin;
+    let nome, senha, email, role, resultado, senha_admin, btnReg;
   
     if(tela_reg_man) {
         senha_admin = document.getElementById('manager-password').value;
         nome = document.getElementById('reg-man-nome').value;
         email = document.getElementById('reg-man-email').value;
         senha = document.getElementById('reg-man-senha').value;
+        btnReg = document.getElementById('btn-reg');
         role = 'manager';
     }
     else {
         nome = document.getElementById('reg-nome').value;
         email = document.getElementById('reg-email').value;
         senha = document.getElementById('reg-senha').value;
+        btnReg = document.getElementById('btn-reg-man');
         role = 'user';
     }
     if (!nome || !email || !senha) {
         alert("Por favor, preencha todos os campos.");
         return;
     }
+
+    //Trava o botão e muda o visual
+    btnReg.disabled = true; 
+    btnReg.classList.add('opacity-50', 'cursor-not-allowed'); 
+    btnReg.innerText = "Aguarde..."; // Dá o feedback para o usuário
 
     const payload = {
         action: 'cadastro',
@@ -534,6 +541,12 @@ async function fazerCadastro() {
       resultado = await enviarParaAPI(payload, PATH_AUTENTICACAO);
     } catch(error) {
       return; //Apenas para não executar as próximas linhas de código
+    } finally {
+        //Destrava o botão
+        //Sempre será realizado
+        btnReg.disabled = false; 
+        btnReg.classList.remove('opacity-50', 'cursor-not-allowed'); 
+        btnReg.innerText = "Fazer Cadastro";
     }
     
     
