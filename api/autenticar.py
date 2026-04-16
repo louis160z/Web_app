@@ -44,7 +44,7 @@ class handler(BaseHTTPRequestHandler):
                 resposta_supabase = requests.post(url, json=dados, headers=headers)
                 resultado = resposta_supabase.json()
 
-                # A VERIFICAÇÃO DEFINITIVA: Olha o status da resposta (400 = Erro, 200 = Sucesso)
+                # Olha o status da resposta (400 = Erro, 200 = Sucesso)
                 if resposta_supabase.status_code != 200:
                     # Pega a mensagem ('msg') que o Supabase mandou, ou usa uma padrão se não vier
                     erro_ingles = resultado.get("msg", "Ocorreu um erro, tente novamente ou solicite apoio técnico.")
@@ -52,7 +52,7 @@ class handler(BaseHTTPRequestHandler):
                     self.responder_json(200, {"sucesso": False, "mensagem": erro_traduzido})
                     return
 
-                # Se passou do if acima, o status foi 200 OK. O token com certeza existe!
+                # Se passou do if acima, o status foi 200 OK. O token com certeza existe
                 self.responder_json(200, {
                     "sucesso": True, 
                     "access_token": resultado["access_token"],
@@ -69,7 +69,7 @@ class handler(BaseHTTPRequestHandler):
                 role = payload.get('role')
                 DOMINIO_OBRIGATORIO = "@inframerica.aero"
                 
-                # Se o e-mail NÃO terminar com o domínio obrigatório, barramos na hora!
+                # Se o e-mail não terminar com o domínio obrigatório
                 if not email.endswith(DOMINIO_OBRIGATORIO):
                     self.responder_json(200, {
                         "sucesso": False, 
