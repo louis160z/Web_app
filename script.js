@@ -462,6 +462,7 @@ async function fazerLogin() {
       document.getElementById('form-reg-man').reset();
       document.getElementById('form-login').reset();
     } catch(error) {
+        console.error("Erro fatal capturado no login: ", error);
         return; //Apenas para não realizar as linhas abaixo
     } finally {
         //Destrava o botão
@@ -481,7 +482,7 @@ async function fazerLogin() {
       email: email
     };
 
-    mostrarTelaInicial(); //Mostra a tela inicial, por enquanto sem agenda carregada
+    mostrarTelaInicial();
 
     try {
       resultado_n8n = await enviarParaAPI(payload_n8n);
