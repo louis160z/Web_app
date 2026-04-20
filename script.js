@@ -99,6 +99,22 @@ function stringBaseCard(pedido) {
 }
 
 //----------------------------------------------------------------------------------------------------------
+
+// Função de blindagem simples para colocar no seu script.js
+function escaparHTML(texto) {
+    if (!texto) return "";
+    return texto.replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
+}
+
+//----------------------------------------------------------------------------------------------------------
 //                                            Funções de POST
 //----------------------------------------------------------------------------------------------------------
 
@@ -147,9 +163,9 @@ function inicializarAgenda(reservas) {
         events: reservas,
         
         eventContent: function(arg) {
-            const id = arg.event.id || "00";
-            const titulo = arg.event.title;
-            const corStatus = arg.event.backgroundColor;
+            const id = escaparHTML(arg.event.id || "00");
+            const titulo = escaparHTML(arg.event.title || "");
+            const corStatus = escaparHTML(arg.event.backgroundColor || "#505050");
 
             // Estrutura: [Bolinha] [ID] [Título]
             return { 
@@ -161,12 +177,12 @@ function inicializarAgenda(reservas) {
             };
         },
         eventClick: function(info) {
-            const idPedido = info.event.id || "Indefinido";
-            const status = defineStatus(info.event.backgroundColor) || "Indefinido";
-            const atividade = info.event.extendedProps.atividade || "Indefinido";
-            const nome = info.event.extendedProps.nome || "Indefinido";
-            const solicitantes = info.event.extendedProps.solicitantes || "Indefinido";
-            const coordenador = info.event.extendedProps.coordenador || "Indefinido";
+            const idPedido = escaparHTML(info.event.id || "Indefinido");
+            const status = escaparHTML(defineStatus(info.event.backgroundColor) || "Indefinido");
+            const atividade = escaparHTML(info.event.extendedProps.atividade || "Indefinido");
+            const nome = escaparHTML(info.event.extendedProps.nome || "Indefinido");
+            const solicitantes = escaparHTML(info.event.extendedProps.solicitantes || "Indefinido");
+            const coordenador = escaparHTML(info.event.extendedProps.coordenador || "Indefinido");
 
             alert(
                 `              🆔 ID: #${idPedido}` +
