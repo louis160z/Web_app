@@ -37,13 +37,15 @@ class handler(BaseHTTPRequestHandler):
             # Tenta decodificar o token, considerando que Supabase usa HS256
             jwt.decode(token, JWT_SECRET, algorithms=["HS256"], audience="authenticated")
             # Faz o envio sem aparecer no F12 (inspect)
-            response = requests.post(
+            resultado_n8n = requests.post(
                 N8N_URL, 
                 json=payload, 
                 headers={'web_authentication': N8N_AUTH}
             )
             # Resposta OK para o site
-            self.responder_json(200, response.json())
+            resposta = resultado_n8n.json()
+            resposta["sucesso"] = True
+            self.responder_json(200, resposta)
 
         except jwt.ExpiredSignatureError:
             self.responder_json(401, {
