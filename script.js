@@ -120,11 +120,24 @@ function escaparHTML(texto) {
 
 //Função para solicitar serviço ao N8N, já criando mensagens de erros, sem precisar criá-las fora da função
 async function enviarParaAPI(payload, path = PATH_SOLICITACOES){
-  let response;
+    let response;
+    // Pega a sessão atual do usuário logado no Supabase
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    // Se não tem sessão, o usuário não está logado.
+    if (!session) {
+        alert("Sessão expirada. Faça login novamente.");
+        window.location.href = "/"; // Redireciona para o login
+        return;
+    }
+    // Este é o JWT (Crachá)
+    const token = session.access_token; 
     try{
         response = await fetch(path, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json',
+                       'Authorization': `Bearer ${token}`
+             },
             body: JSON.stringify(payload)
         });
     } catch (error) {
@@ -472,6 +485,11 @@ async function fazerLogin() {
 
     try {
       resultado_n8n = await enviarParaAPI(payload_n8n);
+        if (resultado_n8n.sucesso === false) {
+            // Mostra o erro relacionado ao token de login
+            alert(resultado_n8n.mensagem);
+            return;
+        }
     } catch(error) {
       return; //Apenas para não realizar as linhas abaixo
     }
@@ -612,7 +630,12 @@ async function solicitarAgendamento() {
     }
     
     try {
-      resultado = await enviarParaAPI(payload);
+        resultado = await enviarParaAPI(payload);
+        if (resultado.sucesso === false) {
+            // Mostra o erro relacionado ao token de login
+            alert(resultado.mensagem);
+            return;
+        }
     } catch(error) {
       return; //Apenas para não executar as próximas linhas de código
     }
@@ -635,7 +658,12 @@ async function deletarPedido(idPedido){
         const payload = {action: 'deletar_pedido', id: idPedido};
         
         try {
-          resultado = await enviarParaAPI(payload); // Solicitando serviços ao N8N
+            resultado = await enviarParaAPI(payload); // Solicitando serviços ao N8N
+            if (resultado.sucesso === false) {
+                // Mostra o erro relacionado ao token de login
+                alert(resultado.mensagem);
+                return;
+            }
         } catch(error) {
           return; //Apenas para não executar as próximas linhas de código
         }
@@ -676,7 +704,12 @@ async function decidirPedido(idPedido, acao) {
         const payload = { action: 'decisao_gestor', id: idPedido, status: acao };
         
         try {
-          resultado = await enviarParaAPI(payload); // Solicitando serviços ao N8N
+            resultado = await enviarParaAPI(payload); // Solicitando serviços ao N8N
+            if (resultado.sucesso === false) {
+                // Mostra o erro relacionado ao token de login
+                alert(resultado.mensagem);
+                return;
+            }
         } catch(error) {
           return; //Apenas para não executar as próximas linhas de código
         }
