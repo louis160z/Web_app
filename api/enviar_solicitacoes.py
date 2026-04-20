@@ -4,6 +4,14 @@ import os
 import requests
 import json
 import jwt
+from supabase import create_client,  Client
+
+#Variaveis do Vercel
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY") 
+
+#Inicializa o cliente do supabase
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):

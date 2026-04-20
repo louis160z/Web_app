@@ -121,23 +121,22 @@ function escaparHTML(texto) {
 //Função para solicitar serviço ao N8N, já criando mensagens de erros, sem precisar criá-las fora da função
 async function enviarParaAPI(payload, path = PATH_SOLICITACOES){
     let response;
-    // Pega a sessão atual do usuário logado no Supabase
-    const { data: { session }, error } = await supabase.auth.getSession();
 
-    // Se não tem sessão, o usuário não está logado.
-    if (!session) {
-        alert("Sessão expirada. Faça login novamente.");
-        window.location.href = "/"; // Redireciona para o login
-        return;
-    }
-    // Este é o JWT (Crachá)
-    const token = session.access_token; 
+    const headers = {'Content-Type': 'application/json'}
+    const token = localStorage.getItem('acess_token');
+
+    if(path === PATH_SOLICITACOES)
+        if(!token){
+            //Todo usuario que solicita ao N8N deve ter token
+            alert("Sessão expirada. Tente reiniciar a página");
+            return;
+        } 
+        headers['Authorization'] = `Bearer ${token}`
+       
     try{
         response = await fetch(path, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json',
-                       'Authorization': `Bearer ${token}`
-             },
+            headers: headers,
             body: JSON.stringify(payload)
         });
     } catch (error) {
@@ -473,7 +472,7 @@ async function fazerLogin() {
     }
 
     // SALVANDO A CHAVE MESTRA DO USUÁRIO NO NAVEGADOR
-    localStorage.setItem('munck_token', resultado_auth.access_token);
+    localStorage.setItem('access_token', resultado_auth.access_token);
     localStorage.setItem('munck_user_id', resultado_auth.usuario.id);
 
     currentUser = { 
@@ -485,7 +484,7 @@ async function fazerLogin() {
     mostrarTelaInicial();
 
     try {
-        resultado_n8n = await enviarParaAPI(payload_n8n);
+        resultado_n8n = await enviarParaAPI(payload_n8n, PATH_SOLICITACOES);
         if (resultado_n8n.sucesso === false) {
             // Mostra o erro relacionado ao token de login
             alert(resultado_n8n.mensagem);
@@ -632,7 +631,7 @@ async function solicitarAgendamento() {
     }
     
     try {
-        resultado = await enviarParaAPI(payload);
+        resultado = await enviarParaAPI(payload, PATH_SOLICITACOES);
         if (resultado.sucesso === false) {
             // Mostra o erro relacionado ao token de login
             alert(resultado.mensagem);
@@ -660,7 +659,7 @@ async function deletarPedido(idPedido){
         const payload = {action: 'deletar_pedido', id: idPedido};
         
         try {
-            resultado = await enviarParaAPI(payload); // Solicitando serviços ao N8N
+            resultado = await enviarParaAPI(payload, PATH_SOLICITACOES); // Solicitando serviços ao N8N
             if (resultado.sucesso === false) {
                 // Mostra o erro relacionado ao token de login
                 alert(resultado.mensagem);
@@ -706,7 +705,7 @@ async function decidirPedido(idPedido, acao) {
         const payload = { action: 'decisao_gestor', id: idPedido, status: acao };
         
         try {
-            resultado = await enviarParaAPI(payload); // Solicitando serviços ao N8N
+            resultado = await enviarParaAPI(payload, PATH_SOLICITACOES); // Solicitando serviços ao N8N
             if (resultado.sucesso === false) {
                 // Mostra o erro relacionado ao token de login
                 alert(resultado.mensagem);
