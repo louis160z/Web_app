@@ -123,16 +123,16 @@ async function enviarParaAPI(payload, path = PATH_SOLICITACOES){
     let response;
 
     const headers = {'Content-Type': 'application/json'}
-    const token = localStorage.getItem('acess_token');
+    const token = localStorage.getItem('access_token');
 
-    if(path === PATH_SOLICITACOES)
+    if(path === PATH_SOLICITACOES){
         if(!token){
             //Todo usuario que solicita ao N8N deve ter token
             alert("Sessão expirada. Tente reiniciar a página");
             return;
         } 
         headers['Authorization'] = `Bearer ${token}`
-       
+    }
     try{
         response = await fetch(path, {
             method: 'POST',
@@ -461,8 +461,7 @@ async function fazerLogin() {
       document.getElementById('form-reg-man').reset();
       document.getElementById('form-login').reset();
     } catch(error) {
-        console.error("Erro fatal capturado no login: ", error);
-        return; //Apenas para não realizar as linhas abaixo
+        return; //Não realiza linhas de baixo. Erros são tratados no enviarParaAPI
     } finally {
         //Destrava o botão
         //Isso roda obrigatoriamente no final, dando erro ou sucesso
@@ -491,8 +490,8 @@ async function fazerLogin() {
             return;
         }
     } catch(error) {
-        console.error("Erro no N8N:", error);
-        return; //Apenas para não realizar as linhas abaixo
+
+        return; //Não realiza linhas de baixo. Erros são tratados no enviarParaAPI
     }
  
     listaGlobalReservas = resultado_n8n.array_calendar;
@@ -503,15 +502,15 @@ async function fazerLogin() {
 
 //Função para logout
 function fazerLogout() {
-    // 1. Destrói as chaves de acesso no navegador (Segurança em 1º lugar)
+    // Destrói as chaves de acesso no navegador
     localStorage.removeItem('munck_token');
     localStorage.removeItem('munck_user_id');
 
-    // 2. Limpa a memória temporária do sistema
+    // Limpa a memória temporária do sistema
     currentUser = null;
     listaGlobalReservas = [];
 
-    // 3. Troca as telas: Esconde as áreas restritas e mostra o login
+    // Troca as telas: Esconde as áreas restritas e mostra o login
     document.getElementById('user-section').classList.add('hidden');
     document.getElementById('manager-section').classList.add('hidden'); // Garante que o painel do gestor também feche
     document.getElementById('calendar-container').classList.add('hidden');
@@ -522,7 +521,7 @@ function fazerLogout() {
     document.getElementById('calendar-container').innerHTML = ``;
     document.getElementById('minhas-reservas-section').innerHTML = ``;
 
-    // 4. (Opcional, mas recomendado) Limpa os campos de senha digitados anteriormente
+    // Limpa os campos de senha digitados anteriormente
     document.getElementById('login-email').value = '';
     document.getElementById('login-senha').value = '';
 }
@@ -577,7 +576,7 @@ async function fazerCadastro() {
       document.getElementById('form-reg-man').reset();
       document.getElementById('form-login').reset();
     } catch(error) {
-      return; //Apenas para não executar as próximas linhas de código
+      return; //Não realiza linhas de baixo. Erros são tratados no enviarParaAPI
     } finally {
         //Destrava o botão, sempre será realizado
         btnReg.disabled = false; 
@@ -638,7 +637,7 @@ async function solicitarAgendamento() {
             return;
         }
     } catch(error) {
-      return; //Apenas para não executar as próximas linhas de código
+      return; //Não realiza linhas de baixo. Erros são tratados no enviarParaAPI
     }
     
     //Atualizando lista e renderizando novamente calendario
@@ -666,7 +665,7 @@ async function deletarPedido(idPedido){
                 return;
             }
         } catch(error) {
-          return; //Apenas para não executar as próximas linhas de código
+          return; //Não realiza linhas de baixo. Erros são tratados no enviarParaAPI
         }
         
         // Simulação visual: Remove o card da tela com um efeito simples
@@ -712,7 +711,7 @@ async function decidirPedido(idPedido, acao) {
                 return;
             }
         } catch(error) {
-          return; //Apenas para não executar as próximas linhas de código
+          return; //Não realiza linhas de baixo. Erros são tratados no enviarParaAPI
         }
         
         console.log(`Pedido ${idPedido} foi ${acao}`);
