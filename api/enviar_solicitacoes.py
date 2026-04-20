@@ -6,7 +6,7 @@ import json
 import jwt
 from supabase import create_client,  Client
 
-#Variaveis do Vercel
+# Chaves do Vercel
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY") 
 
@@ -20,11 +20,11 @@ class handler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         payload = json.loads(post_data)
 
-        # Chaves do Vercel
+        #Chaves do Vercel internas a classe
         N8N_URL = os.environ.get('N8N_WEBHOOK_URL')
         N8N_AUTH = os.environ.get('N8N_HEADER_AUTH')
 
-        #Exige token de login para fazer solicitacao
+        # Exige token de login para fazer solicitacao
         auth_header = self.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Bearer '):
             self.responder_json(401, {"sucesso": False, "mensagem": "Acesso negado: Token não fornecido."})
