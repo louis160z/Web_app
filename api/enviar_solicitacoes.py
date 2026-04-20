@@ -4,14 +4,9 @@ import os
 import requests
 import json
 import jwt
-from supabase import create_client,  Client
 
-# Chaves do Vercel
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY") 
 
-#Inicializa o cliente do supabase
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -58,6 +53,9 @@ class handler(BaseHTTPRequestHandler):
                 "sucesso": False,
                 "mensagem": "Acesso Negado: Token inválido ou corrompido. Caso o erro persista contate o suporte técnico."
             })
+        except Exception as e:
+            print(f"Erro fatal no servidor: {str(e)}")
+            self.responder_json(500, f"Erro interno detalhado: {str(e)}")
     
     def responder_json(self, status, dicionario):
         self.send_response(status)
