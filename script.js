@@ -146,8 +146,9 @@ async function enviarParaAPI(payload, path = PATH_SOLICITACOES){
         return;
     }
     if (!response.ok) {
-        alert("Erro no servidor (Status: " + response.status + ")");
-        throw new Error();
+        const dadosErro = await response.json();
+        alert(`Bloqueado pelo Servidor:\n${dadosErro.erro}`);
+        throw new Error(dadosErro.erro);
         return;
     }
     return await response.json();

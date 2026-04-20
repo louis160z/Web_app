@@ -5,9 +5,6 @@ import requests
 import json
 import jwt
 
-
-
-
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         # Dados do site
