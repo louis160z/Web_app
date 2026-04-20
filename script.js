@@ -485,14 +485,15 @@ async function fazerLogin() {
     mostrarTelaInicial();
 
     try {
-      resultado_n8n = await enviarParaAPI(payload_n8n);
+        resultado_n8n = await enviarParaAPI(payload_n8n);
         if (resultado_n8n.sucesso === false) {
             // Mostra o erro relacionado ao token de login
             alert(resultado_n8n.mensagem);
             return;
         }
     } catch(error) {
-      return; //Apenas para não realizar as linhas abaixo
+        console.error("Erro no N8N:", error);
+        return; //Apenas para não realizar as linhas abaixo
     }
  
     listaGlobalReservas = resultado_n8n.array_calendar;
