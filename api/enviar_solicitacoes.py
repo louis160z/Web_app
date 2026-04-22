@@ -39,20 +39,21 @@ class handler(BaseHTTPRequestHandler):
             resposta["sucesso"] = True
             self.responder_json(200, resposta)
 
-        except jwt.ExpiredSignatureError:
+        except jwt.ExpiredSignatureError as e:
+            print(f"Erro interno detalhado (Vercel Log): {str(e)}")
             self.responder_json(200, {
                 "sucesso": False,
                 "mensagem": "Acesso Negado: O Token expirou. Caso o erro persista contate o suporte técnico."
             })
             
-        except jwt.InvalidTokenError:
-            print(f"O MOTIVO REAL DE ERRO (LOG VERCEL): {str(e)}")
+        except jwt.InvalidTokenError as e:
+            print(f"Erro interno detalhado (Vercel Log): {str(e)}")
             self.responder_json(200, {
                 "sucesso": False,
                 "mensagem": "Acesso Negado: Token inválido ou corrompido. Caso o erro persista contate o suporte técnico."
             })
         except Exception as e:
-            print(f"Erro fatal no servidor: {str(e)}")
+            print(f"Erro interno detalhado (Vercel Log): {str(e)}")
             self.responder_json(200, {"sucesso": False, "mensagem": f"Erro no servidor: {str(e)}"})
     
     def responder_json(self, status, dicionario):
