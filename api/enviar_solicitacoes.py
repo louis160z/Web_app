@@ -3,6 +3,8 @@ from http.server import BaseHTTPRequestHandler
 import os
 import requests
 import json
+import urllib.request
+from urllib.error import HTTPError
 import jwt
 
 class handler(BaseHTTPRequestHandler):
@@ -25,26 +27,24 @@ class handler(BaseHTTPRequestHandler):
         # Recupera o token e evita caracteres não desejados
         token = auth_header.split(' ')[1].replace('"', '').replace("'", "").strip()
         
-        # Link exato do Chaveiro Público (JWKS) do Supabase
-        SUPABASE_URL = os.environ.get('SUPABASE_URL')
+        #Chaves Vercel
+        SUPABASE_URL = os.environ.get('SUPABASE_URL').rstrip('/')
         SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY')
-        jwks_url = f"{SUPABASE_URL.rstrip('/')}/auth/v1/jwks"
+        
+        # Pergunta ao Supabase se o token é válido
+        req = urllib.request.Request(
+            f"{SUPABASE_URL}/auth/v1/user",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "apikey": SUPABASE_ANON_KEY
+            }
+        )
 
         try:
-            # Conecta no chaveiro e acha a chave pública correspondente ao 'kid'
-            jwks_client = jwt.PyJWKClient(
-                jwks_url,
-                headers={"apikey": SUPABASE_ANON_KEY}
-            )
-            chave_publica = jwks_client.get_signing_key_from_jwt(token)
-
-            # Decodifica usando a chave real, habilitando o ES256 e desligando o audience
-            jwt.decode(
-                token, 
-                chave_publica.key, 
-                algorithms=["ES256"], 
-                options={"verify_aud": False}
-            )
+            #Apenas verifica retorno 200 do supabase, c.c gera exceção
+            with urllib.request.urlopen(req) as response:
+                #dados_usuario = json.loads(response.read().decode())
+                pass
 
             # Faz o envio sem aparecer no F12 (inspect)
             resultado_n8n = requests.post(
@@ -59,20 +59,17 @@ class handler(BaseHTTPRequestHandler):
             self.responder_json(200, resposta)
 
         except jwt.ExpiredSignatureError as e:
-            print(f"Erro interno detalhado (Vercel Log): {str(e)}")
             self.responder_json(200, {
                 "sucesso": False,
                 "mensagem": "Acesso Negado: O Token expirou. Caso o erro persista contate o suporte técnico."
             })
             
         except jwt.InvalidTokenError as e:
-            print(f"Erro interno detalhado (Vercel Log): {str(e)}")
             self.responder_json(200, {
                 "sucesso": False,
                 "mensagem": "Acesso Negado: Token inválido ou corrompido. Caso o erro persista contate o suporte técnico."
             })
         except Exception as e:
-            print(f"Erro interno detalhado (Vercel Log): {str(e)}")
             self.responder_json(200, {"sucesso": False, "mensagem": f"Erro no servidor: {str(e)}"})
     
     def responder_json(self, status, dicionario):
