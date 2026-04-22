@@ -396,7 +396,9 @@ function mostrarUserSection() {
         <h2 class="font-semibold mb-1 text-gray-500 text-xs uppercase">Data final</h2>
         <input type="datetime-local" id="reserva-final" class="w-full mb-4 p-2 border rounded text-sm">
         
-        <button onclick="solicitarAgendamento()" class="w-full bg-green-500 text-white p-2 rounded font-bold hover:bg-green-600 transition">Solicitar Reserva</button>
+        <button id="btn-solicitar" onclick="solicitarAgendamento()" class="w-full bg-green-500 text-white p-2 rounded font-bold hover:bg-green-600 transition">
+            Solicitar Reserva
+        </button>
     `;
 }
 
@@ -611,6 +613,7 @@ async function solicitarAgendamento() {
     const atividade = document.getElementById('atividade').value;
     const solicitantes = document.getElementById('solicitantes').value;
     const coordenador = document.getElementById('coordenador').value;
+    const btnSolicitar = document.getElementById('btn-solicitar');
 
     const payload = {
         action: 'agendamento',
@@ -627,7 +630,12 @@ async function solicitarAgendamento() {
       alert("Por favor, preencha todos os campos.");
       return;
     }
-    
+    const textoOriginal = btnSolicitar.innerText;
+
+    //Trava o botão e muda o visual
+    btnSolicitar.disabled = true; 
+    btnSolicitar.classList.add('opacity-50', 'cursor-not-allowed'); 
+    btnSolicitar.innerText = "Aguarde..."; // Dá o feedback para o usuário
     try {
         resultado = await enviarParaAPI(payload, PATH_SOLICITACOES);
         if (resultado.sucesso === false) {
@@ -637,6 +645,11 @@ async function solicitarAgendamento() {
         }
     } catch(error) {
       return; //Não realiza linhas de baixo. Erros são tratados no enviarParaAPI
+    } finally {
+        //Destrava o botão, sempre será realizado
+        btnSolicitar.disabled = false; 
+        btnSolicitar.classList.remove('opacity-50', 'cursor-not-allowed'); 
+        btnSolicitar.innerText = textoOriginal;
     }
     
     //Atualizando lista e renderizando novamente calendario
