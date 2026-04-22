@@ -27,7 +27,7 @@ class handler(BaseHTTPRequestHandler):
 
         try:
             # Tenta decodificar o token, considerando que Supabase usa HS256
-            jwt.decode(token, JWT_SECRET, algorithms=["HS256"], audience="authenticated")
+            jwt.decode(token, JWT_SECRET, algorithms=["ES256"], audience="authenticated")
             # Faz o envio sem aparecer no F12 (inspect)
             resultado_n8n = requests.post(
                 N8N_URL, 
