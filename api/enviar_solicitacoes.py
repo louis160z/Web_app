@@ -5,7 +5,7 @@ import requests
 import json
 import urllib.request
 from urllib.error import HTTPError
-import jwt
+
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
