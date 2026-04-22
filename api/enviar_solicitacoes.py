@@ -57,17 +57,6 @@ class handler(BaseHTTPRequestHandler):
             resposta["sucesso"] = True
             self.responder_json(200, resposta)
 
-        except jwt.ExpiredSignatureError as e:
-            self.responder_json(200, {
-                "sucesso": False,
-                "mensagem": "Acesso Negado: O Token expirou. Caso o erro persista contate o suporte técnico."
-            })
-            
-        except jwt.InvalidTokenError as e:
-            self.responder_json(200, {
-                "sucesso": False,
-                "mensagem": "Acesso Negado: Token inválido ou corrompido. Caso o erro persista contate o suporte técnico."
-            })
         except Exception as e:
             self.responder_json(200, {"sucesso": False, "mensagem": f"Erro no servidor: {str(e)}"})
     
