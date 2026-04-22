@@ -28,7 +28,7 @@ class handler(BaseHTTPRequestHandler):
         token = auth_header.split(' ')[1].replace('"', '').replace("'", "").strip()
         
         #Chaves Vercel
-        SUPABASE_URL = os.environ.get('SUPABASE_URL').rstrip('/')
+        SUPABASE_URL = os.environ.get('SUPABASE_URL')
         SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY')
         
         try:
