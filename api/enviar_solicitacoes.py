@@ -27,17 +27,18 @@ class handler(BaseHTTPRequestHandler):
         
         # Link exato do Chaveiro Público (JWKS) do Supabase
         SUPABASE_URL = os.environ.get('SUPABASE_URL')
+        SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY')
         jwks_url = f"{SUPABASE_URL.rstrip('/')}/auth/v1/jwks"
-    
-        # Senha mestra do Supabase salva no Vercel
-        #JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET')
 
         try:
             # Conecta no chaveiro e acha a chave pública correspondente ao 'kid'
-            jwks_client = jwt.PyJWKClient(jwks_url)
+            jwks_client = jwt.PyJWKClient(
+                jwks_url,
+                headers={"apikey": SUPABASE_ANON_KEY}
+            )
             chave_publica = jwks_client.get_signing_key_from_jwt(token)
 
-            # 4. Decodifica usando a chave real, habilitando o ES256 e desligando o audience!
+            # Decodifica usando a chave real, habilitando o ES256 e desligando o audience
             jwt.decode(
                 token, 
                 chave_publica.key, 
@@ -45,14 +46,13 @@ class handler(BaseHTTPRequestHandler):
                 options={"verify_aud": False}
             )
 
-
-
             # Faz o envio sem aparecer no F12 (inspect)
             resultado_n8n = requests.post(
                 N8N_URL, 
                 json=payload, 
                 headers={'web_authentication': N8N_AUTH}
             )
+
             # Resposta OK para o site
             resposta = resultado_n8n.json()
             resposta["sucesso"] = True
