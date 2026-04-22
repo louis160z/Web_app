@@ -19,15 +19,34 @@ class handler(BaseHTTPRequestHandler):
         # Exige token de login para fazer solicitacao
         auth_header = self.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Bearer '):
-            self.responder_json(401, {"sucesso": False, "mensagem": "Acesso negado: Token não fornecido."})
+            self.responder_json(200, {"sucesso": False, "mensagem": "Acesso negado: Token não fornecido. Caso o erro persista contate o suporte técnico."})
             return
-        token = auth_header.split(' ')[1]
+        
+        # Recupera o token e evita caracteres não desejados
+        token = auth_header.split(' ')[1].replace('"', '').replace("'", "").strip()
+        
+        # Link exato do Chaveiro Público (JWKS) do Supabase
+        SUPABASE_URL = os.environ.get('SUPABASE_URL')
+        jwks_url = f"{SUPABASE_URL.rstrip('/')}/auth/v1/jwks"
+    
         # Senha mestra do Supabase salva no Vercel
-        JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET')
+        #JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET')
 
         try:
-            # Tenta decodificar o token, considerando que Supabase usa HS256
-            jwt.decode(token, JWT_SECRET, algorithms=["ES256"], audience="authenticated")
+            # Conecta no chaveiro e acha a chave pública correspondente ao 'kid'
+            jwks_client = jwt.PyJWKClient(jwks_url)
+            chave_publica = jwks_client.get_signing_key_from_jwt(token)
+
+            # 4. Decodifica usando a chave real, habilitando o ES256 e desligando o audience!
+            jwt.decode(
+                token, 
+                chave_publica.key, 
+                algorithms=["ES256"], 
+                options={"verify_aud": False}
+            )
+
+
+
             # Faz o envio sem aparecer no F12 (inspect)
             resultado_n8n = requests.post(
                 N8N_URL, 
