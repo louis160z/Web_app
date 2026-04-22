@@ -40,19 +40,19 @@ class handler(BaseHTTPRequestHandler):
             self.responder_json(200, resposta)
 
         except jwt.ExpiredSignatureError:
-            self.responder_json(401, {
+            self.responder_json(200, {
                 "sucesso": False,
                 "mensagem": "Acesso Negado: O Token expirou. Caso o erro persista contate o suporte técnico."
             })
             
         except jwt.InvalidTokenError:
-            self.responder_json(401, {
+            self.responder_json(200, {
                 "sucesso": False,
                 "mensagem": "Acesso Negado: Token inválido ou corrompido. Caso o erro persista contate o suporte técnico."
             })
         except Exception as e:
             print(f"Erro fatal no servidor: {str(e)}")
-            self.responder_json(500, f"Erro interno detalhado: {str(e)}")
+            self.responder_json(200, {"sucesso": False, "mensagem": f"Erro no servidor: {str(e)}"})
     
     def responder_json(self, status, dicionario):
         self.send_response(status)

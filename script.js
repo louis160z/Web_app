@@ -141,14 +141,13 @@ async function enviarParaAPI(payload, path = PATH_SOLICITACOES){
         });
     } catch (error) {
         // Erro podendo ser de senha errada do Header Auth
-        alert("Não foi possível conectar ao servidor do Munck. Verifique sua conexão.");
+        alert("Não foi possível conectar ao servidor. Verifique sua conexão.");
         throw new Error();
         return;
     }
     if (!response.ok) {
-        const dadosErro = await response.json();
-        alert(`Bloqueado pelo Servidor:\n${dadosErro.erro}`);
-        throw new Error(dadosErro.erro);
+        alert("Erro no servidor (Status: " + response.status + ")");
+        throw new Error();
         return;
     }
     return await response.json();
@@ -491,7 +490,6 @@ async function fazerLogin() {
             return;
         }
     } catch(error) {
-
         return; //Não realiza linhas de baixo. Erros são tratados no enviarParaAPI
     }
  
