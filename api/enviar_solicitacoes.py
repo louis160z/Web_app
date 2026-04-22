@@ -31,16 +31,15 @@ class handler(BaseHTTPRequestHandler):
         SUPABASE_URL = os.environ.get('SUPABASE_URL').rstrip('/')
         SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY')
         
-        # Pergunta ao Supabase se o token é válido
-        req = urllib.request.Request(
-            f"{SUPABASE_URL}/auth/v1/user",
-            headers={
-                "Authorization": f"Bearer {token}",
-                "apikey": SUPABASE_ANON_KEY
-            }
-        )
-
         try:
+            # Pergunta ao Supabase se o token é válido
+            req = urllib.request.Request(
+                f"{SUPABASE_URL}/auth/v1/user",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "apikey": SUPABASE_ANON_KEY
+                }
+            )
             #Apenas verifica retorno 200 do supabase, c.c gera exceção
             with urllib.request.urlopen(req) as response:
                 #dados_usuario = json.loads(response.read().decode())
