@@ -27,8 +27,7 @@ class handler(BaseHTTPRequestHandler):
 
         try:
             # Tenta decodificar o token, considerando que Supabase usa HS256
-            token = token.replace('"', '').replace("'", "").strip()
-            jwt.decode(token, JWT_SECRET, algorithms=["HS256"], options={"verify_aud": False})
+            jwt.decode(token, JWT_SECRET, algorithms=["HS256"], audience="authenticated")
             # Faz o envio sem aparecer no F12 (inspect)
             resultado_n8n = requests.post(
                 N8N_URL, 
@@ -47,6 +46,7 @@ class handler(BaseHTTPRequestHandler):
             })
             
         except jwt.InvalidTokenError:
+            print(f"O MOTIVO REAL DE ERRO (LOG VERCEL): {str(e)}")
             self.responder_json(200, {
                 "sucesso": False,
                 "mensagem": "Acesso Negado: Token inválido ou corrompido. Caso o erro persista contate o suporte técnico."
